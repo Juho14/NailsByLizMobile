@@ -80,9 +80,13 @@ export const updateReservation = (reservation, link) => {
 
 
 
-export const deleteReservation = (url) => {
-    return fetch(url, {
-        method: 'DELETE'
+export const deleteReservation = (id) => {
+    return fetch(reservationUrl + "reservations", {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: id })
     })
         .then(response => {
             if (!response.ok)

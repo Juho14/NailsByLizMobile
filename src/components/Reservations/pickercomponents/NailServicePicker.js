@@ -1,7 +1,7 @@
 import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { fetchNailServices } from '../../fetches/NailServiceFetch';
+import { fetchNailServices } from '../../../fetches/NailServiceFetch';
 
 export default function NailServicePicker({ onSelectNailService }) {
     const [nailServices, setNailServices] = useState([]);
@@ -25,14 +25,14 @@ export default function NailServicePicker({ onSelectNailService }) {
     };
 
     return (
-        <View>
+        <View style={styles.container}>
             <Picker
                 style={styles.picker}
                 selectedValue={selectedNailService ? selectedNailService.id : null}
                 onValueChange={(value) => handleFieldChange(value)}
             >
                 {nailServices.map(service => (
-                    <Picker.Item key={service.id} label={`${service.type} - ${service.duration / 60} h - $${service.price}`} value={service.id} />
+                    <Picker.Item key={service.id} label={`${service.type} - ${service.duration / 60} h - ${service.price}€`} value={service.id} />
                 ))}
             </Picker>
         </View>
@@ -40,12 +40,18 @@ export default function NailServicePicker({ onSelectNailService }) {
 }
 
 const styles = StyleSheet.create({
-    picker: {
+    container: {
         marginTop: 10,
         padding: 10,
-        width: 325,
-        backgroundColor: 'lightblue',
+        backgroundColor: '#D4F0F0',
+        borderColor: '#8FCACA',
+        borderWidth: 3,
         borderRadius: 5,
-        textAlign: 'center',
+    },
+    picker: {
+        borderRadius: 5,
+        borderColor: '#8FCACA',
+        borderWidth: 1,
+        width: 310,
     },
 });

@@ -16,12 +16,16 @@ const ReservationTimeSelector = ({ route }) => {
 
     const handleDialogOpen = (selectedTime) => {
         if (selectedTime) {
-            navigation.navigate('Viimeistele varaus', { formattedDate: formattedDate, selectedNailService: selectedNailService, selectedTime: selectedTime });
-        }
-        else {
+            if (route.params.fromEdit) {
+                navigation.navigate('Tallenna muutokset', { formattedDate: formattedDate, selectedNailService: selectedNailService, selectedTime: selectedTime });
+            } else {
+                navigation.navigate('Viimeistele varaus', { formattedDate: formattedDate, selectedNailService: selectedNailService, selectedTime: selectedTime });
+            }
+        } else {
             setShowNullDateMessage(true);
         }
     };
+
 
     const formattedStartDate = new Date(formattedDate + 'T00:00:00');
     const formattedEndDate = new Date(formattedDate + 'T23:59:59');
@@ -43,11 +47,11 @@ const ReservationTimeSelector = ({ route }) => {
                 .then(data => {
                     console.log("Reservations Data:", data);
                     setReservations(data);
-                    setFetchingError(null); // Reset fetching error if successful
+                    setFetchingError(null);
                 })
                 .catch(error => {
                     console.error('Error fetching reservations:', error);
-                    setFetchingError(error.message); // Set fetching error
+                    setFetchingError(error.message);
                 });
         }
 
@@ -60,7 +64,7 @@ const ReservationTimeSelector = ({ route }) => {
                 })
                 .catch(error => {
                     console.error('Error fetching nail service:', error);
-                    setFetchingError(error.message); // Set fetching error
+                    setFetchingError(error.message);
                 });
         }
     }, [formattedDate, selectedNailService]);
@@ -77,8 +81,12 @@ const ReservationTimeSelector = ({ route }) => {
         const endTime = new Date(`${formattedDate}T${reservationSettings.endTime}`);
 
         while (startTime <= endTime) {
+            console.log("Current Start Time:", startTime);
             let timeSlotEndTime = new Date(startTime.getTime() + (nailServiceDuration * 60000));
             let overlapsWithReservation = false;
+
+            let previousHadReservation = false; // Boolean to track if the previous time slot had a reservation. If true, add a 15 minute buffer
+            let endTimeConflicts = false; // Boolean to track if the end time of the current reservation conflicts with the start time of an existing reservation. If true, time isnt rendered.
 
             for (let i = 0; i < reservations.length; i++) {
                 const reservationObject = reservations[i];
@@ -88,26 +96,45 @@ const ReservationTimeSelector = ({ route }) => {
                 const reservationStartTime = new Date(reservationObject.startTime);
                 const reservationEndTime = new Date(reservationObject.endTime);
 
-                if (startTime < reservationEndTime && timeSlotEndTime > reservationStartTime) {
+                // Convert reservation start and end times from GMT to GMT+3
+                reservationStartTime.setHours(reservationStartTime.getHours() + 3);
+                reservationEndTime.setHours(reservationEndTime.getHours() + 3);
+
+                if (startTime < reservationEndTime && timeSlotEndTime >= reservationStartTime) {
                     overlapsWithReservation = true;
                     break;
                 }
+
             }
 
-            if (!overlapsWithReservation && startTime >= formattedStartDate && timeSlotEndTime <= formattedEndDate) {
+            if (!overlapsWithReservation && startTime >= formattedStartDate && timeSlotEndTime <= formattedEndDate && !endTimeConflicts) {
                 timeSlots.push(new Date(startTime));
+                previousHadReservation = false; // Reset the boolean value
+            } else {
+                previousHadReservation = true; // Set the boolean value to true if the current time slot has a reservation
+                startTime.setMinutes(startTime.getMinutes() + 15);
             }
+
+            if (endTimeConflicts) {
+                startTime.setMinutes(startTime.getMinutes() + 15);
+                continue;
+            }
+
             startTime.setMinutes(startTime.getMinutes() + 15);
         }
 
         return timeSlots;
     };
 
+
+
     // Function to filter out reserved time slots
     const filterReservedTimeSlots = (timeSlots) => {
-        const reservedSlots = reservations.map(reservation => new Date(reservation.time));
+        const reservedSlots = reservations.map(reservation => new Date(reservation.endTime)); // Use reservation.endTime
         return timeSlots.filter(timeSlot => !reservedSlots.find(slot => slot.getTime() === timeSlot.getTime()));
     };
+
+
 
     if (!reservationSettings || !reservationSettings.startTime || !reservationSettings.endTime || nailServiceDuration === 0) {
         return <ActivityIndicator />;
@@ -117,7 +144,7 @@ const ReservationTimeSelector = ({ route }) => {
     const availableTimeSlots = filterReservedTimeSlots(timeSlots);
 
     return (
-        <View>
+        <View style={styles.container}>
             {fetchingError && <Text>Error fetching reservations: {fetchingError}</Text>}
             {availableTimeSlots.length > 0 ? (
                 <>
@@ -125,6 +152,7 @@ const ReservationTimeSelector = ({ route }) => {
                         <Text style={styles.timeSlotText}>Vapaat ajat:</Text>
                     </View>
                     <FlatList
+                        style={styles.flatList}
                         data={availableTimeSlots}
                         renderItem={({ item }) => (
                             <TouchableOpacity onPress={() => handleDialogOpen(item.toTimeString())}>
@@ -141,6 +169,7 @@ const ReservationTimeSelector = ({ route }) => {
                 <Text>No available time slots</Text>
             )}
         </View>
+
     );
 };
 
@@ -150,17 +179,22 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingVertical: 5,
         paddingHorizontal: 10,
-        borderColor: 'pink',
-        borderWidth: 2,
+        borderColor: '#8FCACA',
+        borderWidth: 3,
         borderRadius: 15,
         margin: 5,
-        backgroundColor: '#FFE4E1',
+        backgroundColor: '#D4F0F0',
         marginHorizontal: '15%',
         width: '70%',
+        marginVertical: 10,
     },
     timeSlotText: {
         fontWeight: 'bold',
     },
+    flatList: {
+        margin: 15,
+    },
 });
+
 
 export default ReservationTimeSelector;

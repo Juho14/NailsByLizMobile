@@ -65,7 +65,7 @@ export const updateReservation = (nailservice, link) => {
 
 
 
-export const deleteReservation = (url) => {
+export const deleteNailService = (url) => {
     return fetch(url, {
         method: 'DELETE'
     })

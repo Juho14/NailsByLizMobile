@@ -1,9 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { Alert, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { saveReservation } from '../../fetches/ReservationFetch';
-
-const ReservationDialog = ({ route }) => {
+import { saveReservation } from '../../../fetches/ReservationFetch';
+const AddReservationDialog = ({ route }) => {
     const navigation = useNavigation();
 
     const {
@@ -192,4 +191,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ReservationDialog;
+export default AddReservationDialog;

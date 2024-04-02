@@ -1,8 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import CustomDatePicker from './CustomDatePicker';
-import NailServicePicker from './NailServicePicker';
+import CustomDatePicker from './pickercomponents/CustomDatePicker';
+import NailServicePicker from './pickercomponents/NailServicePicker';
 
 export default function DateAndServiceSelector() {
     const [formattedDate, setFormattedDate] = useState(null);
@@ -23,11 +23,11 @@ export default function DateAndServiceSelector() {
     const handleDialogOpen = () => {
         if (formattedDate && selectedNailService) {
             navigation.navigate('Valitse aika', { formattedDate: formattedDate, selectedNailService: selectedNailService });
-        }
-        else {
+        } else {
             setShowNullDateMessage(true);
         }
     };
+
 
     const formatDate = (date) => {
         if (!date) return '';
@@ -73,7 +73,9 @@ const styles = StyleSheet.create({
     button: {
         paddingVertical: 10,
         paddingHorizontal: 20,
-        backgroundColor: 'lightblue',
-        borderRadius: 5,
+        backgroundColor: '#D4F0F0',
+        borderColor: '#8FCACA',
+        borderWidth: 3,
+        borderRadius: 15,
     },
 });
