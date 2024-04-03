@@ -44,7 +44,7 @@ export const saveNailService = (nailservice) => {
         .catch(err => console.error(err))
 }
 
-export const updateReservation = (nailservice, link) => {
+export const updateNailservice = (nailservice, link) => {
     return fetch(link, {
         method: 'PUT',
         headers: { 'Content-type': 'application/json' },

@@ -59,11 +59,15 @@ export const saveReservation = (reservation) => {
         .catch(err => console.error(err))
 }
 
-export const updateReservation = (reservation, link) => {
-    return fetch(link, {
+export const updateReservation = (reservation, id) => {
+    const requestBody = JSON.stringify(reservation); // Stringify the reservation object
+    console.log(requestBody); // Log the stringified reservation object
+
+    // Make the PUT request
+    return fetch(reservationUrl + "reservations/" + id, {
         method: 'PUT',
         headers: { 'Content-type': 'application/json' },
-        body: JSON.stringify(reservation)
+        body: requestBody // Use the stringified reservation object as the request body
     })
         .then(response => {
             if (!response.ok)
@@ -77,6 +81,7 @@ export const updateReservation = (reservation, link) => {
         })
         .catch(err => console.error(err));
 };
+
 
 
 

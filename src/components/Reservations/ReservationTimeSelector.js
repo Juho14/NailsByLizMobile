@@ -7,19 +7,36 @@ import { fetchActiveReservationsetting } from '../../fetches/ReservationSettingF
 
 const ReservationTimeSelector = ({ route }) => {
     const navigation = useNavigation();
-    let formattedDate = route.params.formattedDate;
-    let selectedNailService = route.params.selectedNailService;
     const [reservationSettings, setReservationSettings] = useState(null);
     const [reservations, setReservations] = useState([]);
     const [nailServiceDuration, setNailServiceDuration] = useState(0);
     const [fetchingError, setFetchingError] = useState(null);
+    const testNailServiceId = selectedNailServiceId;
+
+    const {
+        reservationId,
+        isFromEdit,
+        selectedNailServiceId,
+        formattedDate,
+    } = route.params;
 
     const handleDialogOpen = (selectedTime) => {
         if (selectedTime) {
-            if (route.params.fromEdit) {
-                navigation.navigate('Tallenna muutokset', { formattedDate: formattedDate, selectedNailService: selectedNailService, selectedTime: selectedTime });
+            if (isFromEdit === true) {
+                console.log(formattedDate);
+                console.log(selectedTime);
+                navigation.navigate('Muokkaa varausta', {
+                    formattedDate: formattedDate,
+                    selectedNailServiceId: selectedNailServiceId,
+                    selectedTime: selectedTime,
+                    reservationId: reservationId,
+                });
             } else {
-                navigation.navigate('Viimeistele varaus', { formattedDate: formattedDate, selectedNailService: selectedNailService, selectedTime: selectedTime });
+                navigation.navigate('Viimeistele varaus', {
+                    formattedDate: formattedDate,
+                    selectedNailServiceId: selectedNailServiceId,
+                    selectedTime: selectedTime
+                });
             }
         } else {
             setShowNullDateMessage(true);
@@ -27,11 +44,12 @@ const ReservationTimeSelector = ({ route }) => {
     };
 
 
+
     const formattedStartDate = new Date(formattedDate + 'T00:00:00');
     const formattedEndDate = new Date(formattedDate + 'T23:59:59');
     useEffect(() => {
         console.log("formattedDate:", formattedDate);
-        console.log("selectedNailService:", selectedNailService);
+        console.log("Time selector selectedNailServiceId:", selectedNailServiceId);
 
         // Fetch active reservation setting
         fetchActiveReservationsetting()
@@ -42,32 +60,32 @@ const ReservationTimeSelector = ({ route }) => {
             .catch(error => console.error('Error fetching reservation setting:', error));
 
         // Fetch reservations of the selected day
-        if (formattedDate) {
-            fetchReservationsOfDay(formattedDate)
-                .then(data => {
-                    console.log("Reservations Data:", data);
-                    setReservations(data);
-                    setFetchingError(null);
-                })
-                .catch(error => {
-                    console.error('Error fetching reservations:', error);
-                    setFetchingError(error.message);
-                });
-        }
+
+        fetchReservationsOfDay(formattedDate)
+            .then(data => {
+                console.log("Reservations Data:", data);
+                setReservations(data);
+                setFetchingError(null);
+            })
+            .catch(error => {
+                console.error('Error fetching reservations:', error);
+                setFetchingError(error.message);
+            });
+
 
         // Fetch specific nail service duration
-        if (selectedNailService) {
-            fetchSpecificNailService(selectedNailService.id)
-                .then(data => {
-                    console.log("Nail Service Data:", data);
-                    setNailServiceDuration(data.duration);
-                })
-                .catch(error => {
-                    console.error('Error fetching nail service:', error);
-                    setFetchingError(error.message);
-                });
-        }
-    }, [formattedDate, selectedNailService]);
+
+        fetchSpecificNailService(selectedNailServiceId)
+            .then(data => {
+                console.log("Nail Service Data:", data);
+                setNailServiceDuration(data.duration);
+            })
+            .catch(error => {
+                console.error('Error fetching nail service:', error);
+                setFetchingError(error.message);
+            });
+
+    }, [formattedDate, selectedNailServiceId]);
 
 
     // Function to generate time slots
@@ -81,7 +99,6 @@ const ReservationTimeSelector = ({ route }) => {
         const endTime = new Date(`${formattedDate}T${reservationSettings.endTime}`);
 
         while (startTime <= endTime) {
-            console.log("Current Start Time:", startTime);
             let timeSlotEndTime = new Date(startTime.getTime() + (nailServiceDuration * 60000));
             let overlapsWithReservation = false;
 
@@ -93,12 +110,20 @@ const ReservationTimeSelector = ({ route }) => {
                 if (reservationObject.status !== "OK") {
                     continue;
                 }
-                const reservationStartTime = new Date(reservationObject.startTime);
-                const reservationEndTime = new Date(reservationObject.endTime);
+                if (reservationObject.id == reservationId) {
+                    continue;
+                }
+                // Function to convert GMT time to Finnish timezone
+                const convertToFinlandTime = (dateString) => {
+                    const date = new Date(dateString);
+                    return new Date(date.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' }));
+                };
 
-                // Convert reservation start and end times from GMT to GMT+3
-                reservationStartTime.setHours(reservationStartTime.getHours() + 3);
-                reservationEndTime.setHours(reservationEndTime.getHours() + 3);
+                // Within your component
+                // Replace the conversion of reservation start and end times with the new function
+                const reservationStartTime = convertToFinlandTime(reservationObject.startTime);
+                const reservationEndTime = convertToFinlandTime(reservationObject.endTime);
+
 
                 if (startTime < reservationEndTime && timeSlotEndTime >= reservationStartTime) {
                     overlapsWithReservation = true;

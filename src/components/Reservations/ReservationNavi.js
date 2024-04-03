@@ -12,7 +12,7 @@ export default function ReservationNavi() {
         <Stack.Navigator initialRouteName="Lista varauksista">
             <Stack.Screen name="Lista varauksista" component={Reservations} />
             <Stack.Screen name="Varauksen lisätiedot" component={ReservationDetails} />
-            <Stack.Screen name="Muokkaa tietoja" component={EditReservationDialog} />
+            <Stack.Screen name="Muokkaa varausta" component={EditReservationDialog} />
             <Stack.Screen name="Valitse palvelu ja päivä" component={DateAndServiceSelector} />
             <Stack.Screen name="Valitse aika" component={ReservationTimeSelector} />
         </Stack.Navigator>

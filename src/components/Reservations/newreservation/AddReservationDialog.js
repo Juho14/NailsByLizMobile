@@ -54,9 +54,17 @@ const AddReservationDialog = ({ route }) => {
         saveReservation(reservation)
             .then(response => {
                 console.log("Reservation saved successfully:", response);
-                setIsVisible(false);
-                navigation.navigate('Kotisivu');
-                Alert.alert('Success', 'Reservation saved successfully.');
+                if (response.status === "OK") {
+                    setIsVisible(false);
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Varaukset' }],
+                    });
+                    Alert.alert('Success', 'Reservation saved successfully.');
+                } else {
+                    console.error("Error saving reservation:", response);
+                    Alert.alert('Error', 'Failed to save reservation.');
+                }
             })
             .catch(error => {
                 console.error("Error saving reservation:", error);

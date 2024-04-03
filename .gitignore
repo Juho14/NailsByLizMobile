@@ -28,7 +28,7 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# env 
+# env
 .env
 
 # typescript
