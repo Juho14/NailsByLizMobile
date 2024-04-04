@@ -96,10 +96,23 @@ export default function Reservations() {
 
     const renderReservationItem = ({ item }) => {
         const { formattedDate, formattedStartTime, formattedEndTime } = formatDateAndTime(item.startTime, item.endTime);
+
+
         const handlePressDetails = () => {
+            const formatDateForBackend = (timeString) => {
+                const date = new Date(timeString);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            const formattedDate = formatDateForBackend(item.startTime);
             navigation.navigate('Varauksen lisätiedot', {
                 reservationId: item.id,
-                nailServiceId: item.nailService.id,
+                selectedNailServiceId: item.nailService.id,
+                selectedTime: formatTimeToString(item.startTime),
+                formattedDate: formattedDate,
             });
         };
 

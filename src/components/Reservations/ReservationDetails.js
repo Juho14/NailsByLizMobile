@@ -1,24 +1,90 @@
+import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { fetchSpecificNailService } from "../../fetches/NailServiceFetch";
-import { fetchSpecificReservation } from "../../fetches/ReservationFetch";
+import { deleteReservation, fetchSpecificReservation } from "../../fetches/ReservationFetch";
 
 
 export default function ReservationDetails({ route }) {
     const [reservation, setReservation] = useState([]);
     const [nailService, setNailService] = useState([]);
+    const navigation = useNavigation();
 
     const {
         reservationId,
-        nailServiceId,
+        selectedNailServiceId,
+        selectedTime,
+        formattedDate,
     } = route.params;
 
     const startTime = new Date(reservation.startTime + 'Z');
     const endTime = new Date(reservation.endTime + 'Z');
 
-    const formattedDate = `${startTime.getDate()}.${startTime.getMonth() + 1}.${startTime.getFullYear()}`;
+    const formattedDateText = `${startTime.getDate()}.${startTime.getMonth() + 1}.${startTime.getFullYear()}`;
     const formattedStartTime = `${startTime.getHours()}:${startTime.getMinutes().toString().padStart(2, '0')}`;
     const formattedEndTime = `${endTime.getHours()}:${endTime.getMinutes().toString().padStart(2, '0')}`;
+
+    const handlePressEdit = () => {
+        navigation.navigate('Muokkaa varausta', {
+            reservationId: reservation.id,
+            selectedNailServiceId: selectedNailServiceId,
+            selectedTime: selectedTime,
+            formattedDate: formattedDate,
+        });
+    };
+
+    const handlePressDelete = async (reservationId, reservation) => {
+        const { formattedDate, formattedStartTime, formattedEndTime } = formatDateAndTime(reservation.startTime, reservation.endTime);
+        Alert.alert(
+            'Confirm Delete',
+            `Are you sure you want to delete the reservation?\n\nType: ${reservation.nailService.type}\nDate: ${formattedDate}\nTime: ${formattedStartTime}-${formattedEndTime}\nName: ${reservation.fname} ${reservation.lname}\nPrice: ${reservation.price}`,
+            [
+                {
+                    text: 'Cancel',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel'
+                },
+                {
+                    text: 'OK',
+                    onPress: async () => {
+                        try {
+                            const response = await deleteReservation(reservationId);
+                            if (response.success) {
+                                navigation.reset({
+                                    index: 0,
+                                    routes: [{ name: 'Varaukset' }],
+                                });
+                                Alert.alert('Success', 'Reservation deleted successfully');
+                            } else {
+                                console.error("Error deleting reservation:", response);
+                                Alert.alert('Error', 'Failed to delete reservation');
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            Alert.alert('Error', 'Failed to delete reservation');
+                        }
+                    }
+                }
+            ],
+            { cancelable: false }
+        );
+    };
+    const formatDateAndTime = (startTime, endTime) => {
+        const formattedStartTime = formatTime(startTime);
+        const formattedEndTime = formatTime(endTime);
+        const formattedDate = formatDate(startTime);
+        return { formattedDate, formattedStartTime, formattedEndTime };
+    };
+
+    const formatTime = (time) => {
+        const date = new Date(time + 'Z');
+        return `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+    };
+
+    const formatDate = (time) => {
+        const date = new Date(time + 'Z');
+        return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
+    };
 
     useEffect(() => {
         fetchSpecificReservation(reservationId)
@@ -31,15 +97,14 @@ export default function ReservationDetails({ route }) {
             });
     }, [reservationId]);
     useEffect(() => {
-        fetchSpecificNailService(nailServiceId)
+        fetchSpecificNailService(selectedNailServiceId)
             .then(data => {
-                console.log("Nail Service Data:", data);
                 setNailService(data);
             })
             .catch(error => {
                 console.error('Error fetching nail service:', error);
             });
-    }, [nailServiceId]);
+    }, [selectedNailServiceId]);
 
     return (
         <View style={styles.DetailView}>
@@ -65,7 +130,7 @@ export default function ReservationDetails({ route }) {
             </View>
             <View style={styles.itemContainer}>
                 <Text style={styles.itemTitle}>Varauksen aika</Text>
-                <Text style={styles.item}>Päivämäärä: {formattedDate}</Text>
+                <Text style={styles.item}>Päivämäärä: {formattedDateText}</Text>
                 <Text style={styles.item}>Alkaa: {formattedStartTime}</Text>
                 <Text style={styles.item}>Loppuu: {formattedEndTime}</Text>
             </View>
@@ -80,6 +145,10 @@ export default function ReservationDetails({ route }) {
             <View style={styles.itemContainer}>
                 <Text style={styles.itemTitle}>Kynsipalvelu </Text>
                 <Text style={styles.item}>{nailService.type} - Palvelun nykyinen hinta: {nailService.price}€,  kesto {nailService.duration} min </Text>
+            </View>
+            <View style={styles.buttonsContainer}>
+                <TouchableOpacity style={styles.button} onPress={handlePressEdit}><Text>Edit</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => handlePressDelete(reservation.id, reservation)}><Text>Delete</Text></TouchableOpacity>
             </View>
         </View>
     );
@@ -111,5 +180,14 @@ const styles = StyleSheet.create({
     },
     item: {
         textAlign: 'center',
+    },
+    buttonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    button: {
+        padding: 5,
+        margin: 15,
+        backgroundColor: '#ccc',
     },
 });
