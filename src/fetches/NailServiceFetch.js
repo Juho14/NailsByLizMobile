@@ -30,7 +30,7 @@ export const fetchSpecificNailService = (id) => {
 
 
 export const saveNailService = (nailservice) => {
-    return fetch(nailServiceUrl + '/nailservices', {
+    return fetch(nailServiceUrl + 'nailservices', {
         method: 'POST',
         headers: { 'Content-type': 'application/json' },
         body: JSON.stringify(nailservice)
@@ -44,20 +44,24 @@ export const saveNailService = (nailservice) => {
         .catch(err => console.error(err))
 }
 
-export const updateNailservice = (nailservice, link) => {
-    return fetch(link, {
+
+export const updateNailservice = (nailservice, id) => {
+    return fetch(nailServiceUrl + 'nailservices/' + id, {
         method: 'PUT',
         headers: { 'Content-type': 'application/json' },
         body: JSON.stringify(nailservice)
     })
         .then(response => {
-            if (!response.ok)
+            if (response.status === 200) {
+                return { success: true };
+            } else if (!response.ok) {
                 throw new Error("Error in edit: " + response.statusText);
-
-            return response.json();
+            } else {
+                throw new Error("Unexpected response: " + response.status);
+            }
         })
         .then(data => {
-            console.log("Updated customer data:", data);
+            console.log("Updated nailservice data:", data);
             return data;
         })
         .catch(err => console.error(err));
@@ -65,13 +69,19 @@ export const updateNailservice = (nailservice, link) => {
 
 
 
-export const deleteNailService = (url) => {
-    return fetch(url, {
+
+export const deleteNailService = (id) => {
+    return fetch(nailServiceUrl + "nailservices/" + id, {
         method: 'DELETE'
     })
         .then(response => {
-            if (!response.ok)
+            if (response.status === 204) {
+                return { success: true };
+            } else if (!response.ok) {
                 throw new Error("Error in delete: " + response.statusText);
+            } else {
+                throw new Error("Unexpected response: " + response.status);
+            }
         })
         .catch(err => console.error(err))
 }

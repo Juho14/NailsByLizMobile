@@ -24,7 +24,6 @@ const AddReservationDialog = ({ route }) => {
 
     // Function to handle saving the reservation
     const handleSaveReservation = () => {
-
         // Format a DateTime string YYYY-MM-DDTHH-MM
         const timeString = selectedTime.split(' ')[0];
         const reservationDateString = `${formattedDate}T${timeString}`;
@@ -53,8 +52,8 @@ const AddReservationDialog = ({ route }) => {
 
         saveReservation(reservation)
             .then(response => {
-                console.log("Reservation saved successfully:", response);
-                if (response.status === "OK") {
+                if (response.success) {
+                    console.log("Reservation saved successfully:", response);
                     setIsVisible(false);
                     navigation.reset({
                         index: 0,
@@ -62,7 +61,7 @@ const AddReservationDialog = ({ route }) => {
                     });
                     Alert.alert('Success', 'Reservation saved successfully.');
                 } else {
-                    console.error("Error saving reservation:", response);
+                    console.error("Failed to save reservation:", response);
                     Alert.alert('Error', 'Failed to save reservation.');
                 }
             })

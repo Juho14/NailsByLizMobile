@@ -51,12 +51,18 @@ export const saveReservation = (reservation) => {
         body: JSON.stringify(reservation)
     })
         .then(response => {
-            if (!response.ok)
+            if (response.status === 201) {
+                return { success: true };
+            } else if (!response.ok) {
                 throw new Error("Addition failed: " + response.statusText);
-
-            return response.json();
+            } else {
+                throw new Error("Unexpected response: " + response.status);
+            }
         })
-        .catch(err => console.error(err))
+        .catch(err => {
+            console.error(err);
+            throw err;
+        });
 }
 
 export const updateReservation = (reservation, id) => {
@@ -66,17 +72,20 @@ export const updateReservation = (reservation, id) => {
         body: JSON.stringify(reservation)
     })
         .then(response => {
-            if (!response.ok)
+            if (response.status === 200) {
+                return { success: true };
+            } else if (!response.ok) {
                 throw new Error("Error in edit: " + response.statusText);
-
-            return response.json();
+            } else {
+                throw new Error("Unexpected response: " + response.status);
+            }
         })
-        .then(data => {
-            console.log("Updated customer data:", data);
-            return data;
-        })
-        .catch(err => console.error(err));
+        .catch(err => {
+            console.error(err);
+            throw err;
+        });
 };
+
 
 export const deleteReservation = (reservationId) => {
     return fetch(reservationUrl + "reservations/" + reservationId, {
@@ -87,7 +96,6 @@ export const deleteReservation = (reservationId) => {
     })
         .then(response => {
             if (response.status === 204) {
-                // Reservation deleted successfully, return a success indicator
                 return { success: true };
             } else if (!response.ok) {
                 throw new Error("Error in delete: " + response.statusText);

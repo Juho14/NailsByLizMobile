@@ -51,9 +51,12 @@ export const saveReservationSetting = (reservationsetting) => {
             if (!response.ok)
                 throw new Error("Addition failed: " + response.statusText);
 
-            return response.json();
+            return { success: true };
         })
-        .catch(err => console.error(err))
+        .catch(err => {
+            console.error(err);
+            return { success: false };
+        });
 }
 
 export const updateReservationSetting = (reservationsetting, link) => {

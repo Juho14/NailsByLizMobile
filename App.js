@@ -2,7 +2,9 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 import * as React from 'react';
 import HomeScreen from './src/components/HomeScreen';
-import NailServices from './src/components/NailServices/NailServices';
+import AddNailService from './src/components/NailServices/AddNailService';
+import NailServiceNavi from './src/components/NailServices/NailServiceNavi';
+import AddReservationSetting from './src/components/ReservationSettings/AddReservationSetting';
 import ReservationSettings from './src/components/ReservationSettings/ReservationSettings';
 import ReservationNavi from './src/components/Reservations/ReservationNavi';
 import AddReservationNavi from './src/components/Reservations/newreservation/AddReservationNavi';
@@ -14,10 +16,12 @@ export default function App() {
     <NavigationContainer>
       <Drawer.Navigator initialRouteName="Kotisivu">
         <Drawer.Screen name="Kotisivu" component={HomeScreen} />
-        <Drawer.Screen name="Palvelut" component={NailServices} />
+        <Drawer.Screen name="Palvelut" component={NailServiceNavi} />
+        <Drawer.Screen name="Lisää palvelu" component={AddNailService} />
         <Drawer.Screen name="Varaukset" component={ReservationNavi} />
         <Drawer.Screen name="Varaa aika" component={AddReservationNavi} />
         <Drawer.Screen name="Varausten asetukset" component={ReservationSettings} />
+        <Drawer.Screen name="Lisää varausasetus" component={AddReservationSetting} />
       </Drawer.Navigator>
     </NavigationContainer>
   );

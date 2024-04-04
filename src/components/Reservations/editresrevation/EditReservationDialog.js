@@ -66,9 +66,8 @@ const EditReservationDialog = ({ route }) => {
     const handleSaveReservation = async () => {
         try {
             setIsLoading(true);
-            // Fetch the nail service data
-            const updatedNailService = await fetchSpecificNailService(selectedNailServiceId);
 
+            const updatedNailService = await fetchSpecificNailService(selectedNailServiceId);
             // Create the updated reservation object with the fetched nail service data
             const updatedReservation = {
                 reservationId,
@@ -81,7 +80,6 @@ const EditReservationDialog = ({ route }) => {
                     duration: updatedNailService.duration,
                     adminService: updatedNailService.adminService,
                 },
-                // Only update the fields that you want to change
                 fname: reservation.fname,
                 lname: reservation.lname,
                 email: reservation.email,
@@ -94,16 +92,15 @@ const EditReservationDialog = ({ route }) => {
 
             console.log("Newly fetched service ", updatedNailService);
 
-            // Update the reservation
             const response = await updateReservation(updatedReservation, reservationId);
-            if (response.status === "OK") {
+            if (response.success) {
                 navigation.reset({
                     index: 0,
                     routes: [{ name: 'Varaukset' }],
                 });
                 Alert.alert('Success', 'Reservation saved successfully.');
             } else {
-                console.error("Error saving reservation:", response);
+                console.error("Failed to save reservation:", response);
                 Alert.alert('Error', 'Failed to save reservation.');
             }
         } catch (error) {
@@ -113,8 +110,6 @@ const EditReservationDialog = ({ route }) => {
             setIsLoading(false);
         }
     };
-
-
 
     const startTime = new Date(reservation.startTime + 'Z');
     const endTime = new Date(reservation.endTime + 'Z');
