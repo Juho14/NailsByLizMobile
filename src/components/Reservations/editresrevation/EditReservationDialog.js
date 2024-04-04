@@ -18,12 +18,11 @@ const EditReservationDialog = ({ route }) => {
         reservationId,
         selectedNailServiceId,
         selectedTime,
-        formattedDate
+        formattedDate,
     } = route.params;
 
     useEffect(() => {
         fetchData();
-        console.log("nail id", selectedNailServiceId)
     }, [fetchData]);
 
     const fetchData = useCallback(async () => {
@@ -67,8 +66,6 @@ const EditReservationDialog = ({ route }) => {
     const handleSaveReservation = async () => {
         try {
             setIsLoading(true);
-            const selectedTimeFormatted = formatDate(selectedTime);
-
             // Fetch the nail service data
             const updatedNailService = await fetchSpecificNailService(selectedNailServiceId);
 
@@ -99,9 +96,16 @@ const EditReservationDialog = ({ route }) => {
 
             // Update the reservation
             const response = await updateReservation(updatedReservation, reservationId);
-            console.log("Reservation updated successfully:", response);
-            navigation.reset({ index: 0, routes: [{ name: 'Varaukset' }] });
-            Alert.alert('Success', 'Reservation saved successfully.');
+            if (response.status === "OK") {
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Varaukset' }],
+                });
+                Alert.alert('Success', 'Reservation saved successfully.');
+            } else {
+                console.error("Error saving reservation:", response);
+                Alert.alert('Error', 'Failed to save reservation.');
+            }
         } catch (error) {
             console.error("Error updating reservation:", error);
             Alert.alert('Error', 'Failed to save reservation.');

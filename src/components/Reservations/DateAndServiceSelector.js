@@ -10,9 +10,9 @@ export default function DateAndServiceSelector({ route }) {
     const [showNullDateMessage, setShowNullDateMessage] = useState(false);
     const navigation = useNavigation();
     const {
-        reservationId,
-        isFromEdit,
-    } = route.params;
+        reservationId = null,
+        isFromEdit = false,
+    } = route.params || {};
 
     const handleDate = (rawDate) => {
         const formatted = formatDate(rawDate);

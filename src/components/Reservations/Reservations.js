@@ -1,6 +1,6 @@
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { deleteReservation, fetchReservations } from '../../fetches/ReservationFetch';
 
 export default function Reservations() {
@@ -22,28 +22,80 @@ export default function Reservations() {
         }
     }, []);
 
+    const handlePressDelete = async (reservationId, reservation) => {
+        const { formattedDate, formattedStartTime, formattedEndTime } = formatDateAndTime(reservation.startTime, reservation.endTime);
+        Alert.alert(
+            'Confirm Delete',
+            `Are you sure you want to delete the reservation?\n\nType: ${reservation.nailService.type}\nDate: ${formattedDate}\nTime: ${formattedStartTime}-${formattedEndTime}\nName: ${reservation.fname} ${reservation.lname}\nPrice: ${reservation.price}`,
+            [
+                {
+                    text: 'Cancel',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel'
+                },
+                {
+                    text: 'OK',
+                    onPress: async () => {
+                        try {
+                            const response = await deleteReservation(reservationId);
+                            if (response.success) {
+                                setReservations(prevReservations => prevReservations.filter(res => res.id !== reservationId));
+                                Alert.alert('Success', 'Reservation deleted successfully');
+                            } else {
+                                console.error("Error deleting reservation:", response);
+                                Alert.alert('Error', 'Failed to delete reservation');
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            Alert.alert('Error', 'Failed to delete reservation');
+                        }
+                    }
+                }
+            ],
+            { cancelable: false }
+        );
+    };
+
+
+    const formatDateAndTime = (startTime, endTime) => {
+        const formattedStartTime = formatTime(startTime);
+        const formattedEndTime = formatTime(endTime);
+        const formattedDate = formatDate(startTime);
+        return { formattedDate, formattedStartTime, formattedEndTime };
+    };
+
+    const formatTime = (time) => {
+        const date = new Date(time + 'Z');
+        return `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+    };
+
+    const formatDate = (time) => {
+        const date = new Date(time + 'Z');
+        return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
+    };
+
+    const formatTimeToString = (time) => {
+        const date = new Date(time);
+        const timezoneOffset = date.getTimezoneOffset();
+        const adjustedHours = date.getHours() - Math.floor(timezoneOffset / 60);
+        const adjustedMinutes = date.getMinutes() + timezoneOffset % 60;
+        const hours = adjustedHours.toString().padStart(2, '0');
+        const minutes = adjustedMinutes.toString().padStart(2, '0');
+        const seconds = date.getSeconds().toString().padStart(2, '0');
+        const offsetSign = timezoneOffset < 0 ? '+' : '-';
+        const offsetHours = Math.abs(Math.floor(timezoneOffset / 60)).toString().padStart(2, '0');
+        const offsetMinutes = Math.abs(timezoneOffset % 60).toString().padStart(2, '0');
+        const offsetString = `${offsetSign}${offsetHours}${offsetMinutes}`;
+
+        return `${hours}:${minutes}:${seconds} GMT${offsetString}`;
+    };
+
     useEffect(() => {
         fetchReservationData();
-    }, [fetchReservationData]);
-
-    useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => {
-            // Fetch data again when the screen gains focus
-            fetchReservationData();
-        });
-
-        return unsubscribe;
-    }, [navigation, fetchReservationData]);
+    }, [fetchReservationData, isFocused]);
 
     const renderReservationItem = ({ item }) => {
-        // Parse start and end times from the object. Add 3 hours for GMT+3
-        const startTime = new Date(item.startTime + 'Z');
-        const endTime = new Date(item.endTime + 'Z');
-
-        const formattedDate = `${startTime.getDate()}.${startTime.getMonth() + 1}.${startTime.getFullYear()}`;
-        const formattedStartTime = `${startTime.getHours()}:${startTime.getMinutes().toString().padStart(2, '0')}`;
-        const formattedEndTime = `${endTime.getHours()}:${endTime.getMinutes().toString().padStart(2, '0')}`;
-
+        const { formattedDate, formattedStartTime, formattedEndTime } = formatDateAndTime(item.startTime, item.endTime);
         const handlePressDetails = () => {
             navigation.navigate('Varauksen lisätiedot', {
                 reservationId: item.id,
@@ -52,14 +104,21 @@ export default function Reservations() {
         };
 
         const handlePressEdit = () => {
+            const formatDateForBackend = (timeString) => {
+                const date = new Date(timeString);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            const formattedDate = formatDateForBackend(item.startTime);
             navigation.navigate('Muokkaa varausta', {
                 reservationId: item.id,
                 selectedNailServiceId: item.nailService.id,
+                selectedTime: formatTimeToString(item.startTime),
+                formattedDate: formattedDate,
             });
-        };
-
-        const handlePressDelete = () => {
-            deleteReservation(item.id);
         };
 
         return (
@@ -73,7 +132,7 @@ export default function Reservations() {
                 <View style={styles.buttonsContainer}>
                     <TouchableOpacity style={styles.button} onPress={handlePressEdit}><Text>Edit</Text></TouchableOpacity>
                     <TouchableOpacity style={styles.button} onPress={handlePressDetails}><Text>Details</Text></TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={handlePressDelete}><Text>Delete</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={() => handlePressDelete(item.id, item)}><Text>Delete</Text></TouchableOpacity>
                 </View>
             </View>
         );
@@ -89,6 +148,8 @@ export default function Reservations() {
                 data={reservations}
                 renderItem={renderReservationItem}
                 keyExtractor={(item, index) => index.toString()}
+                refreshing={isLoading}
+                onRefresh={fetchReservationData}
             />
         </View>
     );

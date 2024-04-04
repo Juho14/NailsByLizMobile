@@ -11,7 +11,7 @@ const ReservationTimeSelector = ({ route }) => {
     const [reservations, setReservations] = useState([]);
     const [nailServiceDuration, setNailServiceDuration] = useState(0);
     const [fetchingError, setFetchingError] = useState(null);
-    const testNailServiceId = selectedNailServiceId;
+    const [nailService, setNailService] = useState([]);
 
     const {
         reservationId,
@@ -34,7 +34,7 @@ const ReservationTimeSelector = ({ route }) => {
             } else {
                 navigation.navigate('Viimeistele varaus', {
                     formattedDate: formattedDate,
-                    selectedNailServiceId: selectedNailServiceId,
+                    selectedNailService: nailService,
                     selectedTime: selectedTime
                 });
             }
@@ -49,7 +49,7 @@ const ReservationTimeSelector = ({ route }) => {
     const formattedEndDate = new Date(formattedDate + 'T23:59:59');
     useEffect(() => {
         console.log("formattedDate:", formattedDate);
-        console.log("Time selector selectedNailServiceId:", selectedNailServiceId);
+        console.log("selectedNailServiceId:", selectedNailServiceId);
 
         // Fetch active reservation setting
         fetchActiveReservationsetting()
@@ -78,6 +78,7 @@ const ReservationTimeSelector = ({ route }) => {
         fetchSpecificNailService(selectedNailServiceId)
             .then(data => {
                 console.log("Nail Service Data:", data);
+                setNailService(data);
                 setNailServiceDuration(data.duration);
             })
             .catch(error => {
@@ -101,9 +102,9 @@ const ReservationTimeSelector = ({ route }) => {
         while (startTime <= endTime) {
             let timeSlotEndTime = new Date(startTime.getTime() + (nailServiceDuration * 60000));
             let overlapsWithReservation = false;
-
             let previousHadReservation = false; // Boolean to track if the previous time slot had a reservation. If true, add a 15 minute buffer
-            let endTimeConflicts = false; // Boolean to track if the end time of the current reservation conflicts with the start time of an existing reservation. If true, time isnt rendered.
+            let endTimeConflicts = false; // Boolean to track if the end time of the current reservation conflicts with the start time of an existing reservation. If true, time isn't rendered.
+            let lastReservationEndTime = null; // Variable to store the end time of the last overlapping reservation
 
             for (let i = 0; i < reservations.length; i++) {
                 const reservationObject = reservations[i];
@@ -113,31 +114,31 @@ const ReservationTimeSelector = ({ route }) => {
                 if (reservationObject.id == reservationId) {
                     continue;
                 }
-                // Function to convert GMT time to Finnish timezone
-                const convertToFinlandTime = (dateString) => {
-                    const date = new Date(dateString);
-                    return new Date(date.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' }));
-                };
+                const reservationStartTime = new Date(reservationObject.startTime);
+                const reservationEndTime = new Date(reservationObject.endTime);
 
-                // Within your component
-                // Replace the conversion of reservation start and end times with the new function
-                const reservationStartTime = convertToFinlandTime(reservationObject.startTime);
-                const reservationEndTime = convertToFinlandTime(reservationObject.endTime);
-
+                // Convert reservation start and end times from GMT to GMT+3
+                reservationStartTime.setHours(reservationStartTime.getHours() + 3);
+                reservationEndTime.setHours(reservationEndTime.getHours() + 3);
 
                 if (startTime < reservationEndTime && timeSlotEndTime >= reservationStartTime) {
                     overlapsWithReservation = true;
+                    lastReservationEndTime = reservationEndTime; // Update the last reservation end time
                     break;
                 }
-
             }
 
             if (!overlapsWithReservation && startTime >= formattedStartDate && timeSlotEndTime <= formattedEndDate && !endTimeConflicts) {
                 timeSlots.push(new Date(startTime));
                 previousHadReservation = false; // Reset the boolean value
             } else {
-                previousHadReservation = true; // Set the boolean value to true if the current time slot has a reservation
-                startTime.setMinutes(startTime.getMinutes() + 15);
+                if (!overlapsWithReservation) {
+                    previousHadReservation = true; // Set the boolean value to true if the current time slot has a reservation
+                    startTime.setMinutes(startTime.getMinutes() + 15);
+                } else {
+                    // If there's a reservation, move startTime to the end time of that reservation
+                    startTime.setTime(lastReservationEndTime.getTime() + (15 * 60000)); // Add 15 minutes buffer after each reservation
+                }
             }
 
             if (endTimeConflicts) {
@@ -153,9 +154,10 @@ const ReservationTimeSelector = ({ route }) => {
 
 
 
+
     // Function to filter out reserved time slots
     const filterReservedTimeSlots = (timeSlots) => {
-        const reservedSlots = reservations.map(reservation => new Date(reservation.endTime)); // Use reservation.endTime
+        const reservedSlots = reservations.map(reservation => new Date(reservation.endTime));
         return timeSlots.filter(timeSlot => !reservedSlots.find(slot => slot.getTime() === timeSlot.getTime()));
     };
 

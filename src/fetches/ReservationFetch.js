@@ -60,14 +60,10 @@ export const saveReservation = (reservation) => {
 }
 
 export const updateReservation = (reservation, id) => {
-    const requestBody = JSON.stringify(reservation); // Stringify the reservation object
-    console.log(requestBody); // Log the stringified reservation object
-
-    // Make the PUT request
     return fetch(reservationUrl + "reservations/" + id, {
         method: 'PUT',
         headers: { 'Content-type': 'application/json' },
-        body: requestBody // Use the stringified reservation object as the request body
+        body: JSON.stringify(reservation)
     })
         .then(response => {
             if (!response.ok)
@@ -82,20 +78,25 @@ export const updateReservation = (reservation, id) => {
         .catch(err => console.error(err));
 };
 
-
-
-
-export const deleteReservation = (id) => {
-    return fetch(reservationUrl + "reservations", {
+export const deleteReservation = (reservationId) => {
+    return fetch(reservationUrl + "reservations/" + reservationId, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ id: id })
     })
         .then(response => {
-            if (!response.ok)
+            if (response.status === 204) {
+                // Reservation deleted successfully, return a success indicator
+                return { success: true };
+            } else if (!response.ok) {
                 throw new Error("Error in delete: " + response.statusText);
+            } else {
+                throw new Error("Unexpected response: " + response.status);
+            }
         })
-        .catch(err => console.error(err))
-}
+        .catch(err => {
+            console.error(err);
+            throw err;
+        });
+};
