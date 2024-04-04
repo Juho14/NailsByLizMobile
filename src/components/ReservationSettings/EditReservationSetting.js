@@ -1,49 +1,60 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
-import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import { saveReservationSetting } from '../../fetches/ReservationSettingFetch';
+import React, { useEffect, useState } from 'react';
+import { Alert, Button, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { fetchSpecificReservationsetting, updateReservationSetting } from '../../fetches/ReservationSettingFetch';
 
-const AddReservationSetting = () => {
+const EditReservationSetting = ({ route }) => {
+    const { id } = route.params;
+    const navigation = useNavigation();
+
     const [name, setName] = useState('');
     const [startTime, setStartTime] = useState(new Date());
     const [endTime, setEndTime] = useState(new Date());
     const [isActive, setIsActive] = useState(false);
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-    const navigation = useNavigation();
+
+    useEffect(() => {
+        const fetchReservationSetting = async () => {
+            try {
+                const setting = await fetchSpecificReservationsetting(id);
+                setName(setting.name);
+                setStartTime(new Date(setting.startTime));
+                setEndTime(new Date(setting.endTime));
+                setIsActive(setting.isActive);
+            } catch (error) {
+                console.error('Error fetching reservation setting:', error);
+                Alert.alert('Error', 'Failed to fetch reservation setting.');
+            }
+        };
+
+        fetchReservationSetting();
+    }, [id]);
 
     const handleSaveReservationSetting = async () => {
         const reservationSetting = {
+            id,
             name,
-            startTime: formatTime(startTime), // Format the start time
-            endTime: formatTime(endTime), // Format the end time
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
             isActive,
         };
 
         try {
-            const response = await saveReservationSetting(reservationSetting);
+            const response = await updateReservationSetting(reservationSetting, id);
             if (response.success) {
-                Alert.alert('Success', 'Reservation setting added successfully.');
-                navigation.navigate('Varaukset');
+                console.log('Reservation setting updated successfully:', response);
+                Alert.alert('Success', 'Reservation setting updated successfully.');
+                navigation.navigate('Lista varauksista');
             } else {
-                throw new Error('Failed to add reservation setting.');
+                throw new Error('Failed to update reservation setting.');
             }
         } catch (error) {
-            console.error('Error adding reservation setting:', error);
-            Alert.alert('Error', error.message || 'Failed to add reservation setting.');
+            console.error('Error updating reservation setting:', error);
+            Alert.alert('Error', error.message || 'Failed to update reservation setting.');
         }
     };
-
-    // Function to format time to HH:mm:ss
-    const formatTime = (time) => {
-        const hours = time.getHours().toString().padStart(2, '0');
-        const minutes = time.getMinutes().toString().padStart(2, '0');
-        const seconds = time.getSeconds().toString().padStart(2, '0');
-        return `${hours}:${minutes}:${seconds}`;
-    };
-
 
     const onChangeStartTime = (event, selectedTime) => {
         const currentTime = selectedTime || startTime;
@@ -57,8 +68,8 @@ const AddReservationSetting = () => {
         setEndTime(currentTime);
     };
 
-    const startTimeString = startTime.toTimeString();
-    const endTimeString = endTime.toTimeString();
+    const startTimeString = startTime.toTimeString().substring(0, 5);
+    const endTimeString = endTime.toTimeString().substring(0, 5);
 
     return (
         <View style={styles.container}>
@@ -125,11 +136,6 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         paddingHorizontal: 10,
     },
-    checkboxContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 15,
-    },
     buttonsContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -143,4 +149,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default AddReservationSetting;
+export default EditReservationSetting;

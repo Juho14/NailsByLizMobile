@@ -9,7 +9,7 @@ export const fetchNailServices = () => {
             return response.json();
         })
         .catch(err => {
-            console.error("Error fetching reservations:", err);
+            console.error("Error fetching nail services:", err);
             throw err;
         });
 }
@@ -23,7 +23,7 @@ export const fetchSpecificNailService = (id) => {
             return response.json();
         })
         .catch(err => {
-            console.error("Error fetching reservations:", err);
+            console.error("Error fetching nail service:", err);
             throw err;
         });
 }

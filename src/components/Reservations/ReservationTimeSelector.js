@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { fetchSpecificNailService } from '../../fetches/NailServiceFetch';
 import { fetchReservationsOfDay } from '../../fetches/ReservationFetch';
-import { fetchActiveReservationsetting } from '../../fetches/ReservationSettingFetch';
+import { fetchActiveReservationSetting } from '../../fetches/ReservationSettingFetch';
 
 const ReservationTimeSelector = ({ route }) => {
     const navigation = useNavigation();
@@ -52,7 +52,7 @@ const ReservationTimeSelector = ({ route }) => {
         console.log("selectedNailServiceId:", selectedNailServiceId);
 
         // Fetch active reservation setting
-        fetchActiveReservationsetting()
+        fetchActiveReservationSetting()
             .then(data => {
                 console.log("Reservation Setting Data:", data);
                 setReservationSettings(data);
