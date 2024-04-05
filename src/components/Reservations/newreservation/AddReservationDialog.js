@@ -22,12 +22,10 @@ const AddReservationDialog = ({ route }) => {
 
     const [isVisible, setIsVisible] = useState(true);
 
-    // Function to handle saving the reservation
     const handleSaveReservation = () => {
         // Format a DateTime string YYYY-MM-DDTHH-MM
         const timeString = selectedTime.split(' ')[0];
         const reservationDateString = `${formattedDate}T${timeString}`;
-        console.log("reservationDateString:", reservationDateString);
         // Change to ISO for the backend
         const startTime = new Date(reservationDateString).toISOString();
         const reservation = {
@@ -50,26 +48,94 @@ const AddReservationDialog = ({ route }) => {
             status: "OK" // Default value is OK
         };
 
-        saveReservation(reservation)
-            .then(response => {
-                if (response.success) {
-                    console.log("Reservation saved successfully:", response);
-                    setIsVisible(false);
-                    navigation.reset({
-                        index: 0,
-                        routes: [{ name: 'Varaukset' }],
-                    });
-                    Alert.alert('Success', 'Reservation saved successfully.');
-                } else {
-                    console.error("Failed to save reservation:", response);
-                    Alert.alert('Error', 'Failed to save reservation.');
+        Alert.alert(
+            'Vahvista varaus',
+            `Etunimi: ${fname}\n
+Sukunimi: ${lname}\n
+Varauksen aika: ${selectedTime}\n
+Palvelu: ${selectedNailService.type}\n
+Hinta: ${selectedNailService.price}€\n
+Email: ${email}\n
+Puhelin: ${phone}\n
+Osoite: ${address}\n
+Kaupunki: ${city}\n
+Postinumero: ${postalcode}\n\n
+Ilmoitathan varauksen muutoksista vähintään 24h ennen sovittua ajankohtaa!
+`,
+            [
+                {
+                    text: 'Peruuta',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel'
+                },
+                {
+                    text: 'Vahvista',
+                    onPress: () => {
+                        // Save the reservation
+                        saveReservation(reservation)
+                            .then(response => {
+                                if (response.success) {
+                                    console.log("Reservation saved successfully:", response);
+                                    setIsVisible(false);
+                                    navigation.reset({
+                                        index: 0,
+                                        routes: [{ name: 'Varaukset' }],
+                                    });
+                                    Alert.alert('Success', 'Reservation saved successfully.');
+                                } else {
+                                    console.error("Failed to save reservation:", response);
+                                    Alert.alert('Error', 'Failed to save reservation.');
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Error saving reservation:", error);
+                                Alert.alert('Error', 'Failed to save reservation.');
+                            });
+                    }
+                },
+                {
+                    text: 'Varauksen ehdot',
+                    onPress: () => {
+                        // Show the terms and conditions alert
+                        Alert.alert(
+                            'Varauksen ehdot',
+                            `Saavu paikalle vasta sovittuna aikana, minulla ei ole erillistä odotustilaa. \n\nMuutoksista tulee ilmoittaa vähintään 24h ennen sovittua varausta. Muutoin joudun perimään 50% palvelun hinnasta.
+                            \n\nJos jätät tulematta ilmoittamatta, joudun perimään täyden palvelun hinnan.
+                            `,
+                            [
+                                {
+                                    text: 'Sulje',
+                                    onPress: () => handleSaveReservation()
+                                }
+                            ]
+                        );
+                    }
                 }
-            })
-            .catch(error => {
-                console.error("Error saving reservation:", error);
-                Alert.alert('Error', 'Failed to save reservation.');
-            });
+            ]
+        );
     };
+
+    const handleClose = () => {
+        Alert.alert(
+            'Haluatko varmasti perua?',
+            'Tietoja ei ole tallennettu',
+            [
+                {
+                    text: 'Peruuta',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel'
+                },
+                {
+                    text: 'Kyllä',
+                    onPress: () => {
+                        setIsVisible(false);
+                        navigation.goBack();
+                    }
+                }
+            ]
+        );
+    };
+
 
     return (
         <Modal
@@ -81,9 +147,10 @@ const AddReservationDialog = ({ route }) => {
         >
             <View style={styles.centeredView}>
                 <View style={styles.modalView}>
-                    <Text style={styles.modalText}>Selected Time: {selectedTime}</Text>
-                    <Text style={styles.modalText}>Selected Date: {formattedDate}</Text>
-                    <Text style={styles.modalText}>Selected Service: {selectedNailService.type}</Text>
+                    <Text style={styles.modalText}>Valittu aika: {selectedTime}</Text>
+                    <Text style={styles.modalText}>Varauksen päivämäärä: {formattedDate}</Text>
+                    <Text style={styles.modalText}>Valittu palvelu: {selectedNailService.type}</Text>
+                    <Text style={styles.modalText}>Hinta: {selectedNailService.price}€</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Etunimi"
@@ -127,13 +194,12 @@ const AddReservationDialog = ({ route }) => {
                         onChangeText={setPostalCode}
                     />
                     <TouchableOpacity onPress={handleSaveReservation} style={styles.saveButton}>
-                        <Text style={styles.saveButtonText}>Save Reservation</Text>
+                        <Text style={styles.saveButtonText}>Tallenna varaus</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => {
-                        // Close the modal
-                        setIsVisible(false);
+                        handleClose();
                     }} style={styles.closeButton}>
-                        <Text style={styles.closeButtonText}>Close</Text>
+                        <Text style={styles.closeButtonText}>Peruuta</Text>
                     </TouchableOpacity>
                 </View>
             </View>

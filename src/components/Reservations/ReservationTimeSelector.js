@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { fetchSpecificNailService } from '../../fetches/NailServiceFetch';
 import { fetchReservationsOfDay } from '../../fetches/ReservationFetch';
 import { fetchActiveReservationSetting } from '../../fetches/ReservationSettingFetch';
@@ -86,6 +86,11 @@ const ReservationTimeSelector = ({ route }) => {
             });
 
     }, [formattedDate, selectedNailServiceId]);
+
+    const handleNoAvailableTimes = () => {
+        Alert.alert(`No available times\nDate: ${formattedDate}`);
+        navigation.navigate("Valitse palvelu ja päivä");
+    }
 
 
     // Function to generate time slots
@@ -192,7 +197,7 @@ const ReservationTimeSelector = ({ route }) => {
                     />
                 </>
             ) : (
-                <Text>No available time slots</Text>
+                handleNoAvailableTimes()
             )}
         </View>
 

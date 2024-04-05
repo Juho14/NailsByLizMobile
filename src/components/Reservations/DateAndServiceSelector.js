@@ -45,8 +45,6 @@ export default function DateAndServiceSelector({ route }) {
         }
     };
 
-
-
     const formatDate = (date) => {
         if (!date) return '';
         const year = date.getFullYear();
@@ -67,10 +65,9 @@ export default function DateAndServiceSelector({ route }) {
                 <CustomDatePicker onDateChange={handleDate} />
             </View>
             <View style={styles.buttonContainer}>
-                <Text style={styles.button} onPress={handleDialogOpen}>Continue</Text>
+                <Text style={styles.button} onPress={handleDialogOpen}>Jatka valitsemaan aika</Text>
             </View>
-            {showNullDateMessage && <Text style={styles.nullDateMessage}>Select a date and service</Text>}
-            <Text>Formatted date: {formattedDate}</Text>
+            {showNullDateMessage && <Text style={styles.nullDateMessage}>Valitse palvelu ja päivä</Text>}
         </View>
     );
 }
