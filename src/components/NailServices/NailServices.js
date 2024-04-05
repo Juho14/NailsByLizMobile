@@ -1,7 +1,7 @@
-import { useIsFocused, useNavigation } from "@react-navigation/native"; // Import the useIsFocused hook
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { deleteNailService, fetchNailServices } from "../../fetches/NailServiceFetch"; // Import the deleteNailService function
+import { deleteNailService, fetchNailServices } from "../../fetches/NailServiceFetch";
 
 export default function NailServices() {
     const [nailServices, setNailServices] = useState([]);

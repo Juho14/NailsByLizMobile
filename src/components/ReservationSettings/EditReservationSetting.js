@@ -10,43 +10,45 @@ const EditReservationSetting = ({ route }) => {
 
     const [name, setName] = useState('');
     const [startTime, setStartTime] = useState(new Date());
-    const [endTime, setEndTime] = useState(new Date());
+    const [endTime, setEndTime] = useState(new Date);
     const [isActive, setIsActive] = useState(false);
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+    const [reservationSetting, setReservationSetting] = useState(null);
+    const [originalStartTime, setOriginalStartTime] = useState("");
+    const [originalEndTime, setOriginalEndTime] = useState("");
 
     useEffect(() => {
-        const fetchReservationSetting = async () => {
-            try {
-                const setting = await fetchSpecificReservationsetting(id);
-                setName(setting.name);
-                setStartTime(new Date(setting.startTime));
-                setEndTime(new Date(setting.endTime));
-                setIsActive(setting.isActive);
-            } catch (error) {
-                console.error('Error fetching reservation setting:', error);
-                Alert.alert('Error', 'Failed to fetch reservation setting.');
-            }
-        };
-
-        fetchReservationSetting();
+        fetchSpecificReservationsetting(id)
+            .then(data => {
+                setName(data.name)
+                setOriginalStartTime(data.startTime);
+                setOriginalEndTime(data.endTime);
+            })
+            .catch(error => {
+                console.error('Error fetching nail service:', error);
+                setFetchingError(error.message);
+            });
     }, [id]);
 
     const handleSaveReservationSetting = async () => {
-        const reservationSetting = {
+        const updatedReservationSetting = {
             id,
             name,
-            startTime: startTime.toISOString(),
-            endTime: endTime.toISOString(),
+            startTime: formatTime(startTime),
+            endTime: formatTime(endTime),
             isActive,
         };
 
         try {
-            const response = await updateReservationSetting(reservationSetting, id);
+            const response = await updateReservationSetting(updatedReservationSetting, id);
             if (response.success) {
                 console.log('Reservation setting updated successfully:', response);
                 Alert.alert('Success', 'Reservation setting updated successfully.');
-                navigation.navigate('Lista varauksista');
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Lista asetuksista' }],
+                });
             } else {
                 throw new Error('Failed to update reservation setting.');
             }
@@ -55,6 +57,23 @@ const EditReservationSetting = ({ route }) => {
             Alert.alert('Error', error.message || 'Failed to update reservation setting.');
         }
     };
+
+
+    const formatTime = (time) => {
+        const hours = time.getHours().toString().padStart(2, '0');
+        const minutes = time.getMinutes().toString().padStart(2, '0');
+        const seconds = time.getSeconds().toString().padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+    };
+
+    const startString = originalStartTime;
+    const endString = originalEndTime;
+
+
+    const startTimeString = startTime.toTimeString();
+    const endTimeString = endTime.toTimeString();
+
+
 
     const onChangeStartTime = (event, selectedTime) => {
         const currentTime = selectedTime || startTime;
@@ -68,9 +87,6 @@ const EditReservationSetting = ({ route }) => {
         setEndTime(currentTime);
     };
 
-    const startTimeString = startTime.toTimeString().substring(0, 5);
-    const endTimeString = endTime.toTimeString().substring(0, 5);
-
     return (
         <View style={styles.container}>
             <Text style={styles.label}>Name:</Text>
@@ -82,7 +98,7 @@ const EditReservationSetting = ({ route }) => {
             />
 
             <View style={styles.buttonsContainer}>
-                <Text style={styles.label}>Start Time:</Text>
+                <Text style={styles.label}>Original start time: {startString}</Text>
                 <TouchableOpacity style={styles.button} onPress={() => setShowStartTimePicker(true)}>
                     <Text>{startTimeString}</Text>
                 </TouchableOpacity>
@@ -99,7 +115,7 @@ const EditReservationSetting = ({ route }) => {
             </View>
 
             <View style={styles.buttonsContainer}>
-                <Text style={styles.label}>End Time:</Text>
+                <Text style={styles.label}>Original end Time: {endString}</Text>
                 <TouchableOpacity style={styles.button} onPress={() => setShowEndTimePicker(true)}>
                     <Text>{endTimeString}</Text>
                 </TouchableOpacity>

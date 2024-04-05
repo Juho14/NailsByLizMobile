@@ -68,7 +68,6 @@ const EditReservationDialog = ({ route }) => {
             setIsLoading(true);
 
             const updatedNailService = await fetchSpecificNailService(selectedNailServiceId);
-            // Create the updated reservation object with the fetched nail service data
             const updatedReservation = {
                 reservationId,
                 startTime: formatDate(selectedTime),

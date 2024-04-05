@@ -17,8 +17,8 @@ const AddReservationSetting = () => {
     const handleSaveReservationSetting = async () => {
         const reservationSetting = {
             name,
-            startTime: formatTime(startTime), // Format the start time
-            endTime: formatTime(endTime), // Format the end time
+            startTime: formatTime(startTime),
+            endTime: formatTime(endTime),
             isActive,
         };
 
@@ -26,7 +26,10 @@ const AddReservationSetting = () => {
             const response = await saveReservationSetting(reservationSetting);
             if (response.success) {
                 Alert.alert('Success', 'Reservation setting added successfully.');
-                navigation.navigate('Varaukset');
+                setName("");
+                setStartTime(new Date());
+                setEndTime(new Date());
+                navigation.navigate('Lista asetuksista');
             } else {
                 throw new Error('Failed to add reservation setting.');
             }

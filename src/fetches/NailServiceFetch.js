@@ -67,9 +67,6 @@ export const updateNailservice = (nailservice, id) => {
         .catch(err => console.error(err));
 };
 
-
-
-
 export const deleteNailService = (id) => {
     return fetch(nailServiceUrl + "nailservices/" + id, {
         method: 'DELETE'

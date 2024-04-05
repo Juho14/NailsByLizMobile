@@ -67,6 +67,8 @@ export const activateReservationSetting = (id) => {
 }
 
 export const saveReservationSetting = (reservationsetting) => {
+    const body = JSON.stringify(reservationsetting);
+    console.log(body);
     return fetch(reservationSettingUrl + 'reservationsettings', {
         method: 'POST',
         headers: { 'Content-type': 'application/json' },
@@ -84,23 +86,27 @@ export const saveReservationSetting = (reservationsetting) => {
         });
 }
 
-export const updateReservationSetting = (reservationsetting, id) => {
-    return fetch(reservationSettingUrl + "resrvationsettings/" + id, {
+export const updateReservationSetting = (reservationSetting, id) => {
+    return fetch(reservationSettingUrl + 'reservationsettings/' + id, {
         method: 'PUT',
         headers: { 'Content-type': 'application/json' },
-        body: JSON.stringify(reservationsetting)
+        body: JSON.stringify(reservationSetting)
     })
         .then(response => {
-            if (!response.ok)
+            if (response.status === 200) {
+                return { success: true };
+            } else if (!response.ok) {
                 throw new Error("Error in edit: " + response.statusText);
-
-            return { success: true, data: response.json() };
+            } else {
+                throw new Error("Unexpected response: " + response.status);
+            }
         })
-        .catch(err => {
-            console.error(err);
-            return { success: false };
-        });
-}
+        .then(data => {
+            console.log("Updated setting data:", data);
+            return data;
+        })
+        .catch(err => console.error(err));
+};
 
 export const deleteReservationSetting = (id) => {
     return fetch(reservationSettingUrl + "reservationsettings/" + id, {

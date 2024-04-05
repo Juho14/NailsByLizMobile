@@ -77,7 +77,6 @@ const ReservationTimeSelector = ({ route }) => {
 
         fetchSpecificNailService(selectedNailServiceId)
             .then(data => {
-                console.log("Nail Service Data:", data);
                 setNailService(data);
                 setNailServiceDuration(data.duration);
             })

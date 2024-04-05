@@ -1,7 +1,7 @@
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { activateReservationSetting, fetchReservationsettings } from '../../fetches/ReservationSettingFetch';
+import { activateReservationSetting, deleteReservationSetting, fetchReservationsettings } from '../../fetches/ReservationSettingFetch';
 
 export default function ReservationSettings() {
     const [settings, setSettings] = useState([]);
@@ -21,7 +21,35 @@ export default function ReservationSettings() {
     };
 
     const handlePressDelete = async (item) => {
-        // Implement your delete logic here
+        Alert.alert(
+            'Confirm Deletion',
+            `Are you sure you want to delete the reservation setting "${item.name}"?\n\nStart Time: ${item.startTime}\nEnd Time: ${item.endTime}`,
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'OK',
+                    onPress: async () => {
+                        try {
+                            const response = await deleteReservationSetting(item.id);
+                            if (response.success) {
+                                // Reload settings after deletion
+                                await reloadSettings();
+                                Alert.alert('Success', `Reservation setting "${item.name}" deleted successfully`);
+                            } else {
+                                Alert.alert('Error', 'Failed to delete reservation setting');
+                            }
+                        } catch (error) {
+                            console.error("Error deleting reservation setting:", error);
+                            Alert.alert('Error', 'Failed to delete reservation setting');
+                        }
+                    },
+                },
+            ],
+            { cancelable: false }
+        );
     };
 
     const reloadSettings = async () => {
@@ -30,7 +58,11 @@ export default function ReservationSettings() {
             setSettings(data);
         } catch (error) {
             console.error(error);
-            // Handle error
+            Alert.alert('Error reloading');
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'Lista asetuksista' }],
+            });
         }
     };
 
@@ -76,12 +108,14 @@ export default function ReservationSettings() {
             <Text>{`Name: ${item.name}`}</Text>
             <Text>{`Start Time: ${item.startTime}`}</Text>
             <Text>{`End Time: ${item.endTime}`}</Text>
-            <Text>{`Active: ${item.isActive ? 'Yes' : 'No'}`}</Text>
-            <View style={styles.buttonsContainer}>
-                <TouchableOpacity style={styles.button} onPress={() => handlePressEdit(item.id)}><Text>Edit</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => handlePressDelete(item)}><Text>Delete</Text></TouchableOpacity>
-                {!item.isActive && <TouchableOpacity style={[styles.button, styles.activateButton]} onPress={() => handlePressActivate(item)}><Text style={styles.activateButtonText}>Activate</Text></TouchableOpacity>}
-            </View>
+            <Text style={[styles.activeText, item.isActive && styles.active]}>{` ${item.isActive ? 'ACTIVE' : ''}`}</Text>
+            {!item.isActive && (
+                <View style={styles.buttonsContainer}>
+                    <TouchableOpacity style={styles.button} onPress={() => handlePressEdit(item)}><Text>Edit</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={() => handlePressDelete(item)}><Text>Delete</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.button, styles.activateButton]} onPress={() => handlePressActivate(item)}><Text style={styles.activateButtonText}>Activate</Text></TouchableOpacity>
+                </View>
+            )}
         </View>
     );
 
@@ -129,5 +163,11 @@ const styles = StyleSheet.create({
     },
     activateButtonText: {
         color: 'white',
+    },
+    activeText: {
+        fontWeight: 'bold',
+    },
+    active: {
+        color: 'green',
     },
 });
