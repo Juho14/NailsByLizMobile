@@ -71,7 +71,6 @@ Ilmoitathan varauksen muutoksista vähintään 24h ennen sovittua ajankohtaa!
                 {
                     text: 'Vahvista',
                     onPress: () => {
-                        // Save the reservation
                         saveReservation(reservation)
                             .then(response => {
                                 if (response.success) {

@@ -57,39 +57,39 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'flex-start', // Align items at the top of the screen
-        paddingTop: 50, // Add padding to create space at the top
-        paddingHorizontal: 20, // Add horizontal padding
+        justifyContent: 'flex-start',
+        paddingTop: 50,
+        paddingHorizontal: 20,
     },
     title: {
-        fontSize: 24, // Increase font size for the title
-        fontWeight: 'bold', // Make the title bold
-        marginBottom: 10, // Add some margin at the bottom of the title
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 10,
     },
     flatListContainer: {
-        flexGrow: 1, // Allow the FlatList container to grow and fill the available space
-        width: '100%', // Set width to 100% to fill the container
-        height: '80%', // Set the height to 80% of the screen height
+        flexGrow: 1,
+        width: '100%',
+        height: '80%',
         borderWidth: 1,
         borderColor: 'gray',
         padding: 10,
-        paddingVertical: 50, // Decrease the paddingVertical value to move the bottom of the container upwards
+        paddingVertical: 50,
     },
     itemContainer: {
-        marginBottom: 10, // Add margin at the bottom of each item
-        alignItems: 'center', // Center items horizontally
+        marginBottom: 10,
+        alignItems: 'center',
     },
     itemDetails: {
-        fontSize: 16, // Increase font size for item details
-        fontWeight: 'bold', // Make item details bold
+        fontSize: 16,
+        fontWeight: 'bold',
     },
     buttonText: {
-        fontSize: 28, // Increase font size for the title
-        fontWeight: 'bold', // Make the title bold
-        marginBottom: 10, // Add some margin at the bottom of the title
+        fontSize: 28,
+        fontWeight: 'bold',
+        marginBottom: 10,
     },
     button: {
-        marginTop: 20, // Increase margin-top for the button
+        marginTop: 20,
         padding: 30,
         backgroundColor: 'lightblue',
         borderRadius: 5,
