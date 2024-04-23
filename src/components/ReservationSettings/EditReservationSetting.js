@@ -14,9 +14,31 @@ const EditReservationSetting = ({ route }) => {
     const [isActive, setIsActive] = useState(false);
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-    const [reservationSetting, setReservationSetting] = useState(null);
     const [originalStartTime, setOriginalStartTime] = useState("");
     const [originalEndTime, setOriginalEndTime] = useState("");
+
+    const adjustTimeForTimezone = (time) => {
+        const date = new Date(time);
+        const timezoneOffset = date.getTimezoneOffset() * 60000;
+        const localTime = new Date(date.getTime() + timezoneOffset);
+        return localTime;
+    };
+
+    const formatTimeToString = (time) => {
+        const parts = time.split(":");
+        const settingHours = parseInt(parts[0], 10);
+        const settingMinutes = parseInt(parts[1], 10);
+
+        // Create a new Date object
+        const date = new Date();
+        date.setHours(settingHours, settingMinutes, 0);
+        const timezoneOffset = date.getTimezoneOffset();
+        const adjustedHours = date.getHours() - Math.floor(timezoneOffset / 60);
+        const adjustedMinutes = date.getMinutes() + timezoneOffset % 60;
+        const hours = adjustedHours.toString().padStart(2, '0');
+        const minutes = adjustedMinutes.toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+    };
 
     useEffect(() => {
         fetchSpecificReservationsetting(id)
@@ -32,11 +54,13 @@ const EditReservationSetting = ({ route }) => {
     }, [id]);
 
     const handleSaveReservationSetting = async () => {
+        const adjustedStartTime = adjustTimeForTimezone(startTime);
+        const adjustedEndTime = adjustTimeForTimezone(endTime);
+
         const updatedReservationSetting = {
-            id,
             name,
-            startTime: formatTime(startTime),
-            endTime: formatTime(endTime),
+            startTime: formatTime(adjustedStartTime),
+            endTime: formatTime(adjustedEndTime),
             isActive,
         };
 
@@ -66,8 +90,8 @@ const EditReservationSetting = ({ route }) => {
         return `${hours}:${minutes}:${seconds}`;
     };
 
-    const startString = originalStartTime;
-    const endString = originalEndTime;
+    const startString = formatTimeToString(originalStartTime);
+    const endString = formatTimeToString(originalEndTime);
 
 
     const startTimeString = startTime.toTimeString();
@@ -89,16 +113,16 @@ const EditReservationSetting = ({ route }) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.label}>Name:</Text>
+            <Text style={styles.label}>Nimi:</Text>
             <TextInput
                 style={styles.input}
                 value={name}
                 onChangeText={setName}
-                placeholder="Enter name"
+                placeholder="Syötä nimi"
             />
 
             <View style={styles.buttonsContainer}>
-                <Text style={styles.label}>Original start time: {startString}</Text>
+                <Text style={styles.label}>Alkuperäinen aloitusaika: {startString}</Text>
                 <TouchableOpacity style={styles.button} onPress={() => setShowStartTimePicker(true)}>
                     <Text>{startTimeString}</Text>
                 </TouchableOpacity>
@@ -115,7 +139,7 @@ const EditReservationSetting = ({ route }) => {
             </View>
 
             <View style={styles.buttonsContainer}>
-                <Text style={styles.label}>Original end Time: {endString}</Text>
+                <Text style={styles.label}>Alkuperäinen lopetusaika: {endString}</Text>
                 <TouchableOpacity style={styles.button} onPress={() => setShowEndTimePicker(true)}>
                     <Text>{endTimeString}</Text>
                 </TouchableOpacity>
@@ -131,7 +155,7 @@ const EditReservationSetting = ({ route }) => {
                 )}
             </View>
 
-            <Button title="Save" onPress={handleSaveReservationSetting} />
+            <Button title="Tallenna muutokset" onPress={handleSaveReservationSetting} />
         </View>
     );
 };

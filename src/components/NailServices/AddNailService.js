@@ -27,11 +27,11 @@ function AddNailService() {
                 setPrice('');
                 setAdminService(false);
                 navigation.navigate('Palvelut');
-                Alert.alert('Success', 'Nail service saved successfully.');
+                Alert.alert('Palvelu tallennettu!', `Nimi: ${type}, Hinta: ${price}€, Kesto: ${duration} min.`);
             })
             .catch(error => {
                 console.error("Error saving nail service:", error);
-                Alert.alert('Error', 'Failed to save nail service.');
+                Alert.alert('Virhe tallennuksessa', 'Tallennus epäonnistui.');
             });
     };
 
@@ -42,42 +42,42 @@ function AddNailService() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.label}>Type:</Text>
+            <Text style={styles.label}>Palvelu:</Text>
             <TextInput
                 style={styles.input}
                 value={type}
                 onChangeText={setType}
-                placeholder="Enter type"
+                placeholder="Syötä palvelun nimi"
             />
 
-            <Text style={styles.label}>Duration (minutes):</Text>
+            <Text style={styles.label}>Kesto (minuutteina):</Text>
             <TextInput
                 style={styles.input}
                 value={duration}
                 onChangeText={setDuration}
-                placeholder="Enter duration"
+                placeholder="Syötä ketso"
                 keyboardType="numeric"
             />
 
-            <Text style={styles.label}>Price:</Text>
+            <Text style={styles.label}>Hinta: (kokoluku tai desimaali)</Text>
             <TextInput
                 style={styles.input}
                 value={price}
                 onChangeText={setPrice}
-                placeholder="Enter price"
+                placeholder="Syötä hinta"
                 keyboardType="numeric"
             />
 
             <View style={styles.checkboxContainer}>
-                <Text style={styles.label}>Admin Service:</Text>
+                <Text style={styles.label}>Tuleeko palvelu asiakkaille? :</Text>
                 <View style={styles.container}>
                     <Picker
                         style={styles.picker}
                         selectedValue={adminService}
                         onValueChange={(value) => handleFieldChange(value)}
                     >
-                        <Picker.Item key={1} label="Yes" value={true} />
-                        <Picker.Item key={2} label="No" value={false} />
+                        <Picker.Item key={2} label="Kyllä" value={false} />
+                        <Picker.Item key={1} label="ei" value={true} />
                     </Picker>
                 </View>
 

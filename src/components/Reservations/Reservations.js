@@ -25,29 +25,29 @@ export default function Reservations() {
     const handlePressDelete = async (reservationId, reservation) => {
         const { formattedDate, formattedStartTime, formattedEndTime } = formatDateAndTime(reservation.startTime, reservation.endTime);
         Alert.alert(
-            'Confirm Delete',
-            `Are you sure you want to delete the reservation?\n\nType: ${reservation.nailService.type}\nDate: ${formattedDate}\nTime: ${formattedStartTime}-${formattedEndTime}\nName: ${reservation.fname} ${reservation.lname}\nPrice: ${reservation.price}`,
+            'Vahvista poisto',
+            `Haluatko varmasti poistaa varauksen?\n\nPalvelu: ${reservation.nailService.type}\nPvm: ${formattedDate}\nAika: ${formattedStartTime}-${formattedEndTime}\nNimi: ${reservation.fname} ${reservation.lname}\nHinta: ${reservation.price}€`,
             [
                 {
-                    text: 'Cancel',
+                    text: 'Peruuta',
                     onPress: () => console.log('Cancel Pressed'),
                     style: 'cancel'
                 },
                 {
-                    text: 'OK',
+                    text: 'Poista',
                     onPress: async () => {
                         try {
                             const response = await deleteReservation(reservationId);
                             if (response.success) {
                                 setReservations(prevReservations => prevReservations.filter(res => res.id !== reservationId));
-                                Alert.alert('Success', 'Reservation deleted successfully');
+                                Alert.alert('Poisto onnistui');
                             } else {
                                 console.error("Error deleting reservation:", response);
-                                Alert.alert('Error', 'Failed to delete reservation');
+                                Alert.alert('Poisto epäonnistui');
                             }
                         } catch (error) {
                             console.error(error);
-                            Alert.alert('Error', 'Failed to delete reservation');
+                            Alert.alert('Poisto epäonnistui');
                         }
                     }
                 }
@@ -138,14 +138,14 @@ export default function Reservations() {
             <View style={styles.itemContainer}>
                 <View style={styles.itemDetails}>
                     <Text>{`${item.nailService.type} - ${item.fname} ${item.lname}`}</Text>
-                    <Text>{`Date: ${formattedDate}`}</Text>
-                    <Text>{`Time: ${formattedStartTime}-${formattedEndTime}`}</Text>
-                    <Text>{`Price: ${item.price}`}</Text>
+                    <Text>{`Pvm: ${formattedDate}`}</Text>
+                    <Text>{`Ajankohta: ${formattedStartTime}-${formattedEndTime}`}</Text>
+                    <Text>{`Hinta: ${item.price}`}</Text>
                 </View>
                 <View style={styles.buttonsContainer}>
-                    <TouchableOpacity style={styles.button} onPress={handlePressEdit}><Text>Edit</Text></TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={handlePressDetails}><Text>Details</Text></TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => handlePressDelete(item.id, item)}><Text>Delete</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={handlePressEdit}><Text>Muokkaa</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={handlePressDetails}><Text>Lisätiedot</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={() => handlePressDelete(item.id, item)}><Text>Poista</Text></TouchableOpacity>
                 </View>
             </View>
         );

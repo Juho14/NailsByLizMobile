@@ -80,15 +80,15 @@ Ilmoitathan varauksen muutoksista vähintään 24h ennen sovittua ajankohtaa!
                                         index: 0,
                                         routes: [{ name: 'Varaukset' }],
                                     });
-                                    Alert.alert('Success', 'Reservation saved successfully.');
+                                    Alert.alert('Varaus tallennettu!', `Nimi: ${fname} ${lname}\nAjankohta ${selectedTime}\nPalvelu: ${selectedNailService.type}\nHinta: ${selectedNailService.price}€`);
                                 } else {
                                     console.error("Failed to save reservation:", response);
-                                    Alert.alert('Error', 'Failed to save reservation.');
+                                    Alert.alert('Tallennus epäonnistui.');
                                 }
                             })
                             .catch(error => {
                                 console.error("Error saving reservation:", error);
-                                Alert.alert('Error', 'Failed to save reservation.');
+                                Alert.alert('Tallennus epäonnistui.');
                             });
                     }
                 },
@@ -164,31 +164,31 @@ Ilmoitathan varauksen muutoksista vähintään 24h ennen sovittua ajankohtaa!
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="Email"
+                        placeholder="Sähköposti"
                         value={email}
                         onChangeText={setEmail}
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="Phone"
+                        placeholder="Puhelinnumero"
                         value={phone}
                         onChangeText={setPhone}
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="Address"
+                        placeholder="Osoite"
                         value={address}
                         onChangeText={setAddress}
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="City"
+                        placeholder="Kaupunki"
                         value={city}
                         onChangeText={setCity}
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="Postal Code"
+                        placeholder="Postinumero"
                         value={postalcode}
                         onChangeText={setPostalCode}
                     />

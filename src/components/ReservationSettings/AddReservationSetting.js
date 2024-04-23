@@ -14,11 +14,21 @@ const AddReservationSetting = () => {
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
     const navigation = useNavigation();
 
+    const adjustTimeForTimezone = (time) => {
+        const date = new Date(time);
+        const timezoneOffset = date.getTimezoneOffset() * 60000;
+        const localTime = new Date(date.getTime() + timezoneOffset);
+        return localTime;
+    };
+
     const handleSaveReservationSetting = async () => {
+        const adjustedStartTime = adjustTimeForTimezone(startTime);
+        const adjustedEndTime = adjustTimeForTimezone(endTime);
+
         const reservationSetting = {
             name,
-            startTime: formatTime(startTime),
-            endTime: formatTime(endTime),
+            startTime: formatTime(adjustedStartTime),
+            endTime: formatTime(adjustedEndTime),
             isActive,
         };
 
@@ -46,7 +56,6 @@ const AddReservationSetting = () => {
         const seconds = time.getSeconds().toString().padStart(2, '0');
         return `${hours}:${minutes}:${seconds}`;
     };
-
 
     const onChangeStartTime = (event, selectedTime) => {
         const currentTime = selectedTime || startTime;
@@ -127,11 +136,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         marginBottom: 15,
         paddingHorizontal: 10,
-    },
-    checkboxContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 15,
     },
     buttonsContainer: {
         flexDirection: 'row',

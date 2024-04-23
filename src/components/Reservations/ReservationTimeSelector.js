@@ -5,6 +5,7 @@ import { fetchSpecificNailService } from '../../fetches/NailServiceFetch';
 import { fetchReservationsOfDay } from '../../fetches/ReservationFetch';
 import { fetchActiveReservationSetting } from '../../fetches/ReservationSettingFetch';
 
+
 const ReservationTimeSelector = ({ route }) => {
     const navigation = useNavigation();
     const [reservationSettings, setReservationSettings] = useState(null);
@@ -88,9 +89,16 @@ const ReservationTimeSelector = ({ route }) => {
     }, [formattedDate, selectedNailServiceId]);
 
     const handleNoAvailableTimes = () => {
-        Alert.alert(`No available times\nDate: ${formattedDate}`);
+        Alert.alert(`Ei vapaita aikoja\nPäivä: ${formattedDate}`);
         navigation.navigate("Valitse palvelu ja päivä");
     }
+
+    const adjustTimeForTimezone = (time) => {
+        const date = new Date(time);
+        const timezoneOffset = date.getTimezoneOffset() * 60000; // Convert minutes to milliseconds
+        const localTime = new Date(date.getTime() - timezoneOffset);
+        return localTime;
+    };
 
 
     // Function to generate time slots
@@ -104,10 +112,10 @@ const ReservationTimeSelector = ({ route }) => {
         const endTime = new Date(`${formattedDate}T${reservationSettings.endTime}`);
 
         while (startTime <= endTime) {
+            let localStartTime = adjustTimeForTimezone(startTime);
             let timeSlotEndTime = new Date(startTime.getTime() + (nailServiceDuration * 60000));
             let overlapsWithReservation = false;
             let previousHadReservation = false; // Boolean to track if the previous time slot had a reservation. If true, add a 15 minute buffer
-            let endTimeConflicts = false; // Boolean to track if the end time of the current reservation conflicts with the start time of an existing reservation. If true, time isn't rendered.
             let lastReservationEndTime = null; // Variable to store the end time of the last overlapping reservation
 
             for (let i = 0; i < reservations.length; i++) {
@@ -122,8 +130,8 @@ const ReservationTimeSelector = ({ route }) => {
                 const reservationEndTime = new Date(reservationObject.endTime);
 
                 // Convert reservation start and end times from GMT to GMT+3
-                reservationStartTime.setHours(reservationStartTime.getHours() + 3);
-                reservationEndTime.setHours(reservationEndTime.getHours() + 3);
+                reservationStartTime.setHours(reservationStartTime.getHours());
+                reservationEndTime.setHours(reservationEndTime.getHours());
 
                 if (startTime < reservationEndTime && timeSlotEndTime >= reservationStartTime) {
                     overlapsWithReservation = true;
@@ -132,73 +140,57 @@ const ReservationTimeSelector = ({ route }) => {
                 }
             }
 
-            if (!overlapsWithReservation && startTime >= formattedStartDate && timeSlotEndTime <= formattedEndDate && !endTimeConflicts) {
-                timeSlots.push(new Date(startTime));
+            if (!overlapsWithReservation && startTime >= formattedStartDate && timeSlotEndTime <= formattedEndDate) {
+                timeSlots.push(localStartTime);
                 previousHadReservation = false; // Reset the boolean value
             } else {
                 if (!overlapsWithReservation) {
                     previousHadReservation = true; // Set the boolean value to true if the current time slot has a reservation
-                    startTime.setMinutes(startTime.getMinutes() + 15);
+                    startTime.setMinutes(startTime.getMinutes() + 30);
                 } else {
                     // If there's a reservation, move startTime to the end time of that reservation
-                    startTime.setTime(lastReservationEndTime.getTime() + (15 * 60000)); // Add 15 minutes buffer after each reservation
+                    startTime.setTime(lastReservationEndTime.getTime() + (30 * 60000)); // Add 30 minutes buffer after each reservation
                 }
             }
 
-            if (endTimeConflicts) {
-                startTime.setMinutes(startTime.getMinutes() + 15);
-                continue;
-            }
-
-            startTime.setMinutes(startTime.getMinutes() + 15);
+            startTime.setMinutes(startTime.getMinutes() + 30);
         }
 
         return timeSlots;
     };
-
-
-
-
-    // Function to filter out reserved time slots
-    const filterReservedTimeSlots = (timeSlots) => {
-        const reservedSlots = reservations.map(reservation => new Date(reservation.endTime));
-        return timeSlots.filter(timeSlot => !reservedSlots.find(slot => slot.getTime() === timeSlot.getTime()));
-    };
-
-
 
     if (!reservationSettings || !reservationSettings.startTime || !reservationSettings.endTime || nailServiceDuration === 0) {
         return <ActivityIndicator />;
     }
 
     const timeSlots = generateTimeSlots();
-    const availableTimeSlots = filterReservedTimeSlots(timeSlots);
+
+    if (timeSlots.length === 0) {
+        handleNoAvailableTimes();
+    }
+
 
     return (
         <View style={styles.container}>
             {fetchingError && <Text>Error fetching reservations: {fetchingError}</Text>}
-            {availableTimeSlots.length > 0 ? (
-                <>
-                    <View style={{ alignItems: 'center' }}>
-                        <Text style={styles.timeSlotText}>Vapaat ajat:</Text>
-                    </View>
-                    <FlatList
-                        style={styles.flatList}
-                        data={availableTimeSlots}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity onPress={() => handleDialogOpen(item.toTimeString())}>
-                                <View style={styles.timeSlotContainer}>
-                                    <Text>{item.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-                                </View>
-                            </TouchableOpacity>
+            <>
+                <View style={{ alignItems: 'center' }}>
+                    <Text style={styles.timeSlotText}>Vapaat ajat:</Text>
+                </View>
+                <FlatList
+                    style={styles.flatList}
+                    data={timeSlots}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity onPress={() => handleDialogOpen(item.toTimeString())}>
+                            <View style={styles.timeSlotContainer}>
+                                <Text>{item.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                            </View>
+                        </TouchableOpacity>
 
-                        )}
-                        keyExtractor={(item, index) => index.toString()}
-                    />
-                </>
-            ) : (
-                handleNoAvailableTimes()
-            )}
+                    )}
+                    keyExtractor={(item, index) => index.toString()}
+                />
+            </>
         </View>
 
     );

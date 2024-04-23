@@ -21,29 +21,30 @@ export default function ReservationSettings() {
     };
 
     const handlePressDelete = async (item) => {
+        const { name, startTime, endTime } = item;
         Alert.alert(
-            'Confirm Deletion',
-            `Are you sure you want to delete the reservation setting "${item.name}"?\n\nStart Time: ${item.startTime}\nEnd Time: ${item.endTime}`,
+            'Vahvista poisto',
+            `Haluatko varmasti poistaa asetuksen "${name}"?\n \n Aukioloajat: ${startTime} - ${endTime}`,
             [
                 {
-                    text: 'Cancel',
+                    text: 'Peruuta',
                     style: 'cancel',
                 },
                 {
-                    text: 'OK',
+                    text: 'Poista',
                     onPress: async () => {
                         try {
                             const response = await deleteReservationSetting(item.id);
                             if (response.success) {
                                 // Reload settings after deletion
                                 await reloadSettings();
-                                Alert.alert('Success', `Reservation setting "${item.name}" deleted successfully`);
+                                Alert.alert('Poisto onnistui', `Asetus "${name}" on poistettu.`);
                             } else {
-                                Alert.alert('Error', 'Failed to delete reservation setting');
+                                Alert.alert('Poistaminen epäonnistui.');
                             }
                         } catch (error) {
                             console.error("Error deleting reservation setting:", error);
-                            Alert.alert('Error', 'Failed to delete reservation setting');
+                            Alert.alert('Poistaminen epäonnistui.');
                         }
                     },
                 },
@@ -58,7 +59,7 @@ export default function ReservationSettings() {
             setSettings(data);
         } catch (error) {
             console.error(error);
-            Alert.alert('Error reloading');
+            Alert.alert('Lataus epäonnistui');
             navigation.reset({
                 index: 0,
                 routes: [{ name: 'Lista asetuksista' }],
@@ -70,15 +71,15 @@ export default function ReservationSettings() {
         const { id, name, startTime, endTime } = item;
 
         Alert.alert(
-            'Confirm Activation',
-            `Are you sure you want to activate the reservation setting "${name}"?\n\nName: ${name}\nStart Time: ${startTime}\nEnd Time: ${endTime}`,
+            'Vahvista aktivointi',
+            `Haluatko varmasti aktivoida asetuksen "${name}"?\n \n Aukioloajat: ${startTime} - ${endTime}`,
             [
                 {
-                    text: 'Cancel',
+                    text: 'Peruuta',
                     style: 'cancel',
                 },
                 {
-                    text: 'OK',
+                    text: 'Aktivoi',
                     onPress: async () => {
                         try {
                             const response = await activateReservationSetting(id);
@@ -86,13 +87,13 @@ export default function ReservationSettings() {
                             if (response.success) {
                                 // Reload settings after activation
                                 await reloadSettings();
-                                Alert.alert('Success', `Reservation setting "${name}" activated successfully`);
+                                Alert.alert('Aktivointi onnistui!', `Asetus "${name}" on aktivoitu.`);
                             } else {
-                                Alert.alert('Error', 'Failed to activate reservation setting');
+                                Alert.alert('Aktivointi epäonnistui.');
                             }
                         } catch (error) {
                             console.error("Error activating reservation setting:", error);
-                            Alert.alert('Error', 'Failed to activate reservation setting');
+                            Alert.alert('Aktivointi epäonnistui.');
                         }
                     },
                 },
@@ -101,23 +102,42 @@ export default function ReservationSettings() {
         );
     };
 
+    const formatTimeToString = (time) => {
+        const parts = time.split(":");
+        const settingHours = parseInt(parts[0], 10);
+        const settingMinutes = parseInt(parts[1], 10);
 
+        // Create a new Date object
+        const date = new Date();
+        date.setHours(settingHours, settingMinutes, 0);
+        const timezoneOffset = date.getTimezoneOffset();
+        const adjustedHours = date.getHours() - Math.floor(timezoneOffset / 60);
+        const adjustedMinutes = date.getMinutes() + timezoneOffset % 60;
+        const hours = adjustedHours.toString().padStart(2, '0');
+        const minutes = adjustedMinutes.toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+    };
 
-    const renderItem = ({ item }) => (
-        <View style={styles.settingContainer}>
-            <Text>{`Name: ${item.name}`}</Text>
-            <Text>{`Start Time: ${item.startTime}`}</Text>
-            <Text>{`End Time: ${item.endTime}`}</Text>
-            <Text style={[styles.activeText, item.isActive && styles.active]}>{` ${item.isActive ? 'ACTIVE' : ''}`}</Text>
-            {!item.isActive && (
-                <View style={styles.buttonsContainer}>
-                    <TouchableOpacity style={styles.button} onPress={() => handlePressEdit(item)}><Text>Edit</Text></TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => handlePressDelete(item)}><Text>Delete</Text></TouchableOpacity>
-                    <TouchableOpacity style={[styles.button, styles.activateButton]} onPress={() => handlePressActivate(item)}><Text style={styles.activateButtonText}>Activate</Text></TouchableOpacity>
-                </View>
-            )}
-        </View>
-    );
+    const renderItem = ({ item }) => {
+        // Adjust times from assumed UTC to local
+        const localStartTime = formatTimeToString(item.startTime);
+        const localEndTime = formatTimeToString(item.endTime);
+
+        return (
+            <View style={styles.settingContainer}>
+                <Text>{`Nimi: ${item.name}`}</Text>
+                <Text>{`Aukioloajat: ${localStartTime} - ${localEndTime}`}</Text>
+                <Text style={[styles.activeText, item.isActive && styles.active]}>{item.isActive ? 'AKTIIVINEN' : ''}</Text>
+                {!item.isActive && (
+                    <View style={styles.buttonsContainer}>
+                        <TouchableOpacity style={styles.button} onPress={() => handlePressEdit(item)}><Text>Muokkaa</Text></TouchableOpacity>
+                        <TouchableOpacity style={styles.button} onPress={() => handlePressDelete(item)}><Text>Poista</Text></TouchableOpacity>
+                        <TouchableOpacity style={[styles.button, styles.activateButton]} onPress={() => handlePressActivate(item)}><Text style={styles.activateButtonText}>Aktivoi</Text></TouchableOpacity>
+                    </View>
+                )}
+            </View>
+        );
+    };
 
 
     return (

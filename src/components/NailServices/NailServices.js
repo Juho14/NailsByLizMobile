@@ -25,30 +25,30 @@ export default function NailServices() {
     const handlePressDelete = async (item) => {
         const { id, type, duration, price, adminService } = item;
         Alert.alert(
-            'Confirm Delete',
-            `Are you sure you want to delete the nail service?\n\nType: ${type}\nDuration: ${duration} minutes\nPrice: ${price}\nAdmin Service: ${adminService ? 'Yes' : 'No'}`,
+            'Vahvista poisto',
+            `Oletko varma, että haluat poistaa palvelun?\n\nPalvelu: ${type}\nKesto: ${duration} minuuttia\nHinta: ${price}\nPalvelu asiakkaille: ${adminService ? 'Ei' : 'Kyllä'}`,
             [
                 {
-                    text: 'Cancel',
+                    text: 'Peruuta',
                     onPress: () => console.log('Cancel Pressed'),
                     style: 'cancel'
                 },
                 {
-                    text: 'OK',
+                    text: 'Poista',
                     onPress: async () => {
                         try {
                             const response = await deleteNailService(id);
                             if (response.success) {
                                 // Remove the deleted item from the list
                                 setNailServices(prevServices => prevServices.filter(service => service.id !== id));
-                                Alert.alert('Success', 'Nail service deleted successfully');
+                                Alert.alert('Poisto onnistui');
                             } else {
                                 console.error("Error deleting nail service:", response);
-                                Alert.alert('Error', 'Failed to delete nail service');
+                                Alert.alert('Poisto epäonnistui');
                             }
                         } catch (error) {
                             console.error(error);
-                            Alert.alert('Error', 'Failed to delete nail service');
+                            Alert.alert('Poisto epäonnistui');
                         }
                     }
                 }
@@ -60,14 +60,14 @@ export default function NailServices() {
     const renderItem = ({ item }) => (
         <View style={styles.itemContainer}>
             <View style={styles.itemDetails}>
-                <Text>Type: {item.type}</Text>
-                <Text>Duration: {item.duration} minutes, {(item.duration / 60).toFixed(2)} hours</Text>
-                <Text>Price: ${item.price}</Text>
-                <Text>Admin service: {item.adminService ? 'Yes' : 'No'}</Text>
+                <Text>Palvelun nimi: {item.type}</Text>
+                <Text>Kesto: {item.duration} minuuttia, {(item.duration / 60).toFixed(2)} tuntia</Text>
+                <Text>Hinta: {item.price}€</Text>
+                <Text>Palvelu asiakkaille: {item.adminService ? 'Ei' : 'Kyllä'}</Text>
             </View>
             <View style={styles.buttonsContainer}>
-                <TouchableOpacity style={styles.button} onPress={() => handlePressEdit(item)}><Text>Edit</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => handlePressDelete(item)}><Text>Delete</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => handlePressEdit(item)}><Text>Muokkaa</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => handlePressDelete(item)}><Text>Poista</Text></TouchableOpacity>
             </View>
         </View>
     );

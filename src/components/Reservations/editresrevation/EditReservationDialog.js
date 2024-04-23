@@ -1,4 +1,4 @@
-import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { fetchSpecificNailService } from '../../../fetches/NailServiceFetch';
@@ -7,7 +7,6 @@ import { fetchSpecificReservation, updateReservation } from '../../../fetches/Re
 
 const EditReservationDialog = ({ route }) => {
     const navigation = useNavigation();
-    const isFocused = useIsFocused();
 
     const [isLoading, setIsLoading] = useState(false);
     const [reservation, setReservation] = useState({});
@@ -97,7 +96,7 @@ const EditReservationDialog = ({ route }) => {
                     index: 0,
                     routes: [{ name: 'Varaukset' }],
                 });
-                Alert.alert('Success', 'Reservation saved successfully.');
+                Alert.alert('Muutokset tallennettu!', `Nimi: ${reservation.fname} ${reservation.lname}\nPvm: ${formattedDateText}\nAjankohta: ${formattedStartTime}`);
             } else {
                 console.error("Failed to save reservation:", response);
                 Alert.alert('Error', 'Failed to save reservation.');
@@ -128,12 +127,12 @@ const EditReservationDialog = ({ route }) => {
                 </TouchableOpacity>
                 <TextInput style={styles.input} placeholder="Etunimi" value={reservation.fname} onChangeText={value => setReservation(prevState => ({ ...prevState, fname: value }))} />
                 <TextInput style={styles.input} placeholder="Sukunimi" value={reservation.lname} onChangeText={value => setReservation(prevState => ({ ...prevState, lname: value }))} />
-                <TextInput style={styles.input} placeholder="Email" value={reservation.email} onChangeText={value => setReservation(prevState => ({ ...prevState, email: value }))} />
-                <TextInput style={styles.input} placeholder="Phone" value={reservation.phone} onChangeText={value => setReservation(prevState => ({ ...prevState, phone: value }))} />
-                <TextInput style={styles.input} placeholder="Address" value={reservation.address} onChangeText={value => setReservation(prevState => ({ ...prevState, address: value }))} />
-                <TextInput style={styles.input} placeholder="City" value={reservation.city} onChangeText={value => setReservation(prevState => ({ ...prevState, city: value }))} />
-                <TextInput style={styles.input} placeholder="Postal Code" value={reservation.postalcode} onChangeText={value => setReservation(prevState => ({ ...prevState, postalcode: value }))} />
-                <TextInput style={styles.input} placeholder="Price" value={price} onChangeText={(value) => setPrice(value)} />
+                <TextInput style={styles.input} placeholder="Sähköposti" value={reservation.email} onChangeText={value => setReservation(prevState => ({ ...prevState, email: value }))} />
+                <TextInput style={styles.input} placeholder="Puhelinnumero" value={reservation.phone} onChangeText={value => setReservation(prevState => ({ ...prevState, phone: value }))} />
+                <TextInput style={styles.input} placeholder="Osoite" value={reservation.address} onChangeText={value => setReservation(prevState => ({ ...prevState, address: value }))} />
+                <TextInput style={styles.input} placeholder="Kaupunkik" value={reservation.city} onChangeText={value => setReservation(prevState => ({ ...prevState, city: value }))} />
+                <TextInput style={styles.input} placeholder="Postinumero" value={reservation.postalcode} onChangeText={value => setReservation(prevState => ({ ...prevState, postalcode: value }))} />
+                <TextInput style={styles.input} placeholder="Hinta" value={price} onChangeText={(value) => setPrice(value)} />
                 <TextInput style={styles.input} placeholder="Status" value={reservation.status} onChangeText={value => setReservation(prevState => ({ ...prevState, status: value }))} />
                 <TouchableOpacity onPress={handleSaveReservation} style={styles.saveButton} disabled={isLoading}>
                     {isLoading ? (

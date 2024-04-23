@@ -36,16 +36,16 @@ export default function ReservationDetails({ route }) {
     const handlePressDelete = async (reservationId, reservation) => {
         const { formattedDate, formattedStartTime, formattedEndTime } = formatDateAndTime(reservation.startTime, reservation.endTime);
         Alert.alert(
-            'Confirm Delete',
-            `Are you sure you want to delete the reservation?\n\nType: ${reservation.nailService.type}\nDate: ${formattedDate}\nTime: ${formattedStartTime}-${formattedEndTime}\nName: ${reservation.fname} ${reservation.lname}\nPrice: ${reservation.price}`,
+            'Vavhista poisto',
+            `Haluatko varmasti poistaa varauksen?\n\nPalvelu: ${reservation.nailService.type}\nPvm: ${formattedDate}\nAika: ${formattedStartTime}-${formattedEndTime}\nNimi: ${reservation.fname} ${reservation.lname}\nHinta: ${reservation.price}€`,
             [
                 {
-                    text: 'Cancel',
+                    text: 'Peruuta',
                     onPress: () => console.log('Cancel Pressed'),
                     style: 'cancel'
                 },
                 {
-                    text: 'OK',
+                    text: 'Poista',
                     onPress: async () => {
                         try {
                             const response = await deleteReservation(reservationId);
@@ -54,14 +54,14 @@ export default function ReservationDetails({ route }) {
                                     index: 0,
                                     routes: [{ name: 'Varaukset' }],
                                 });
-                                Alert.alert('Success', 'Reservation deleted successfully');
+                                Alert.alert('Poisto onnistui');
                             } else {
                                 console.error("Error deleting reservation:", response);
-                                Alert.alert('Error', 'Failed to delete reservation');
+                                Alert.alert('Poisto epäonnistui');
                             }
                         } catch (error) {
                             console.error(error);
-                            Alert.alert('Error', 'Failed to delete reservation');
+                            Alert.alert('Poisto epäonnistui');
                         }
                     }
                 }
@@ -143,12 +143,12 @@ export default function ReservationDetails({ route }) {
                 <Text style={styles.item}>{reservation.status}</Text>
             </View>
             <View style={styles.itemContainer}>
-                <Text style={styles.itemTitle}>Kynsipalvelu </Text>
+                <Text style={styles.itemTitle}>Kynsipalvelu</Text>
                 <Text style={styles.item}>{nailService.type} - Palvelun nykyinen hinta: {nailService.price}€,  kesto {nailService.duration} min </Text>
             </View>
             <View style={styles.buttonsContainer}>
-                <TouchableOpacity style={styles.button} onPress={handlePressEdit}><Text>Edit</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => handlePressDelete(reservation.id, reservation)}><Text>Delete</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={handlePressEdit}><Text>Muokkaa</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => handlePressDelete(reservation.id, reservation)}><Text>Poista</Text></TouchableOpacity>
             </View>
         </View>
     );
